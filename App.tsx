@@ -58,11 +58,11 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
-      <main className="flex-1 overflow-y-auto no-scrollbar p-3 pb-20">
-        <div className="max-w-md mx-auto space-y-3">
-          <header className="flex justify-between items-center px-1 h-8">
-            <span className="text-[12px] font-black text-indigo-500 tracking-tighter uppercase">{activeTab}</span>
-            <span className="text-[9px] font-bold text-slate-700">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24">
+        <div className="max-w-md mx-auto space-y-4">
+          <header className="flex justify-between items-center px-1 h-12">
+            <span className="text-xl font-black text-indigo-500 tracking-tighter uppercase">{activeTab}</span>
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
           </header>
           
           {activeTab === 'dashboard' && <Dashboard state={state} onAdd={addTransaction} onAddScheduled={() => {}} onNavigateToScheduled={() => setActiveTab('scheduled')} />}

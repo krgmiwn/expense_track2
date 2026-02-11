@@ -12,21 +12,21 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', label: 'HOME', icon: <ICONS.ChartPie /> },
-    { id: 'history', label: 'LEDGER', icon: <ICONS.Wallet /> },
+    { id: 'history', label: 'FLOW', icon: <ICONS.Wallet /> },
     { id: 'scheduled', label: 'AUTO', icon: <ICONS.Calendar /> },
-    { id: 'settings', label: 'PROFILE', icon: <ICONS.Settings /> },
+    { id: 'settings', label: 'SET', icon: <ICONS.Settings /> },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-white/5 h-16 flex justify-around items-center px-6 z-[100]">
+    <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 h-20 flex justify-around items-center px-4 z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
       {menuItems.map((item) => (
         <button 
           key={item.id} 
           onClick={() => setActiveTab(item.id)} 
-          className={`flex flex-col items-center gap-1 transition-all py-1 active:scale-95 ${activeTab === item.id ? 'text-indigo-400' : 'text-slate-600'}`}
+          className={`flex flex-col items-center gap-1.5 transition-all p-2 active:scale-90 ${activeTab === item.id ? 'text-indigo-500' : 'text-slate-500'}`}
         >
-          <span className="text-lg">{item.icon}</span>
-          <span className="text-[7px] font-black uppercase tracking-[0.2em]">{item.label}</span>
+          <span className="text-2xl">{item.icon}</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em]">{item.label}</span>
         </button>
       ))}
     </nav>
