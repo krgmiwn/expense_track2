@@ -53,7 +53,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           if (btnParent) {
             window.google.accounts.id.renderButton(
               btnParent,
-              { theme: "outline", size: "large", width: "100%", shape: "pill" }
+              { 
+                theme: "outline", // Changed from 'filled_blue' to 'outline' for a full white look
+                size: "medium", 
+                width: 320, 
+                shape: "pill",
+                text: "continue_with",
+                logo_alignment: "left"
+              }
             );
           }
         } catch (e) {
@@ -86,79 +93,69 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-100/40 rounded-full blur-[120px]"></div>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Liquid Crystal Background Orbs */}
+      <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-indigo-600/30 rounded-full blur-[160px] animate-pulse"></div>
+      <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-indigo-500/20 rounded-full blur-[160px] animate-pulse duration-[10s]"></div>
 
-      <div className="max-w-md w-full bg-white/80 backdrop-blur-xl rounded-[3rem] p-10 shadow-2xl shadow-slate-200 border border-white relative z-10">
+      <div className="max-w-md w-full bg-white/10 backdrop-blur-3xl rounded-[4rem] p-10 shadow-[0_48px_128px_-16px_rgba(0,0,0,0.6)] border border-white/20 relative z-10 animate-in zoom-in-95 duration-700">
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl mb-6 shadow-xl shadow-indigo-100">
+          <div className="w-24 h-24 bg-indigo-600 rounded-[2.5rem] mx-auto flex items-center justify-center text-white text-4xl mb-6 shadow-2xl shadow-indigo-500/50 transform -rotate-6">
             <i className="fas fa-wallet"></i>
           </div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tighter mb-2">FinTrack Pro</h1>
-          <p className="text-slate-500 font-medium">Smart Finance for the Modern Age</p>
+          <h1 className="text-4xl font-black text-white tracking-tighter mb-2">FinTrack Pro</h1>
+          <p className="text-indigo-200/40 font-black uppercase tracking-[0.4em] text-[10px]">Liquid Crystal Intelligence</p>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 text-center">Get Started</h2>
+          <div className="bg-black/20 backdrop-blur-2xl p-8 rounded-[3.5rem] border border-white/5 shadow-inner flex flex-col items-center">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-8 text-center">Identity Portal</h2>
             
+            {/* Unified Solid Blue Button Design */}
             <button 
               onClick={handleGuestLogin}
-              className="w-full py-4 px-6 bg-indigo-600 text-white rounded-full font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-95 mb-6"
+              className="w-full py-5 px-8 bg-indigo-600 text-white rounded-[2rem] font-black text-lg hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-4 active:scale-95 mb-6"
             >
-              <i className="fas fa-rocket"></i> Continue as Guest
+              <i className="fas fa-bolt"></i> Quick Entry
             </button>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-[1px] flex-1 bg-slate-200"></div>
-              <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Or login with</span>
-              <div className="h-[1px] flex-1 bg-slate-200"></div>
+            <div className="w-full flex items-center gap-6 mb-6">
+              <div className="h-[1px] flex-1 bg-white/10"></div>
+              <span className="text-[9px] font-black uppercase text-white/20 tracking-[0.3em]">Cloud Sync</span>
+              <div className="h-[1px] flex-1 bg-white/10"></div>
             </div>
 
-            <div id="googleBtn" className="w-full min-h-[50px] flex justify-center overflow-hidden"></div>
+            {/* Google Button Container - White Background and Theme set to Outline */}
+            <div className="w-full flex justify-center py-1 px-1 rounded-[2.5rem] bg-white shadow-xl relative group overflow-hidden transition-transform active:scale-95">
+               <div id="googleBtn" className="relative z-10 w-full flex justify-center min-h-[32px]"></div>
+            </div>
           </div>
 
-          <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-xs">
-                <i className="fas fa-tools"></i>
-              </div>
-              <p className="text-[10px] text-amber-700 font-black leading-tight uppercase tracking-tight">
-                Developer Configuration
-              </p>
-            </div>
-            <p className="text-[10px] text-amber-600 leading-relaxed">
-              If Google Login shows an "Origin Error", copy this URL and add it to your Authorized JavaScript Origins in the Google Console:<br/>
-              <code className="bg-amber-100/50 px-1.5 py-0.5 rounded text-amber-800 font-bold block mt-1 break-all">{window.location.origin}</code>
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-6 text-center">
             <div>
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl mx-auto flex items-center justify-center mb-2">
-                <i className="fas fa-shield-alt"></i>
+              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
+                <i className="fas fa-lock text-sm"></i>
               </div>
-              <p className="text-[10px] font-bold text-slate-400">Secure</p>
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Secure</p>
             </div>
             <div>
-              <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl mx-auto flex items-center justify-center mb-2">
-                <i className="fas fa-bolt"></i>
+              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
+                <i className="fas fa-brain text-sm"></i>
               </div>
-              <p className="text-[10px] font-bold text-slate-400">Fast</p>
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Neural</p>
             </div>
             <div>
-              <div className="w-10 h-10 bg-pink-50 text-pink-500 rounded-xl mx-auto flex items-center justify-center mb-2">
-                <i className="fas fa-user-secret"></i>
+              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
+                <i className="fas fa-sync text-sm"></i>
               </div>
-              <p className="text-[10px] font-bold text-slate-400">Private</p>
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Live</p>
             </div>
           </div>
         </div>
 
-        <p className="mt-10 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest">
-          By continuing you agree to our <br/>
-          <span className="text-indigo-500 cursor-pointer">Terms</span> & <span className="text-indigo-500 cursor-pointer">Privacy Policy</span>
+        <p className="mt-12 text-center text-[9px] text-white/10 font-black uppercase tracking-[0.4em] leading-loose">
+          Secure Encrypted Transaction Layer <br/>
+          <span className="text-indigo-400/40 hover:text-indigo-300 transition-colors cursor-pointer">Privacy Protocol v3.5</span>
         </p>
       </div>
     </div>

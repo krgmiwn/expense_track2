@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AppState, Transaction, ScheduledTransaction, CURRENCIES, CATEGORIES, AccountType, Frequency } from '../types';
 import { ICONS } from '../constants';
 import { getFinancialAdvice } from '../services/geminiService';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface DashboardProps {
   state: AppState;
@@ -13,7 +13,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onNavigateToScheduled }) => {
-  const [advice, setAdvice] = useState<string>('Analyzing your daily financial patterns...');
+  const [advice, setAdvice] = useState<string>('Analyzing your liquidity...');
   const [isAdding, setIsAdding] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   
@@ -51,12 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onN
     });
 
     const totalBalance = state.accounts.reduce((sum, acc) => sum + acc.balance, 0);
-
-    return {
-      balance: totalBalance,
-      todayIncome: tInc,
-      todayExpenses: tExp
-    };
+    return { balance: totalBalance, todayIncome: tInc, todayExpenses: tExp };
   }, [state.transactions, state.accounts]);
 
   const dailyHistoryData = useMemo(() => {
@@ -132,225 +127,234 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onN
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Main Wallet Card */}
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden">
+    <div className="space-y-8 pb-12">
+      {/* Main Glass Wallet */}
+      <div className="liquid-card-gradient rounded-[3.5rem] p-10 text-white shadow-2xl relative overflow-hidden animate-in slide-in-from-bottom duration-700">
         <div className="relative z-10">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="opacity-70 text-[10px] font-black uppercase tracking-[0.2em]">Total Capital Balance</p>
-              <h2 className="text-5xl font-black mb-8 tracking-tighter">
-                <span className="text-indigo-300 mr-1">{currencySymbol}</span>
+              <p className="text-white/60 text-[11px] font-black uppercase tracking-[0.3em] mb-1">Available Capital</p>
+              <h2 className="text-6xl font-black tracking-tighter flex items-baseline">
+                <span className="text-indigo-200 text-3xl mr-2 font-bold">{currencySymbol}</span>
                 {balance.toLocaleString()}
               </h2>
             </div>
-            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10">
-              <ICONS.Wallet />
+            <div className="w-16 h-16 bg-white/20 rounded-[2rem] flex items-center justify-center backdrop-blur-3xl border border-white/20 shadow-xl">
+              <i className="fas fa-fingerprint text-2xl"></i>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-5 mb-6">
             <button 
               onClick={() => openAction('INCOME')}
-              className="bg-white text-indigo-700 hover:bg-indigo-50 px-6 py-4 rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95"
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-5 rounded-3xl text-sm font-black transition-all flex items-center justify-center gap-3 backdrop-blur-md border border-white/10 active:scale-95 group"
             >
-              <i className="fas fa-plus-circle text-lg"></i> Fund Add
+              <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                <i className="fas fa-plus"></i>
+              </div>
+              Fund Add
             </button>
             <button 
               onClick={() => openAction('EXPENSE')}
-              className="bg-indigo-500/30 hover:bg-indigo-500/40 text-white px-6 py-4 rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-2 border border-white/10 active:scale-95"
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-5 rounded-3xl text-sm font-black transition-all flex items-center justify-center gap-3 backdrop-blur-md border border-white/10 active:scale-95 group"
             >
-              <i className="fas fa-minus-circle text-lg"></i> Fund Reduce
+              <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-rose-500 transition-colors">
+                <i className="fas fa-minus"></i>
+              </div>
+              Fund Reduce
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-5 mb-8">
             <button 
               onClick={() => openAction('INCOME', true)}
-              className="bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-100 px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 border border-emerald-400/20 active:scale-95"
+              className="bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-50 px-6 py-4 rounded-3xl text-xs font-black transition-all flex items-center justify-center gap-3 border border-emerald-400/20 active:scale-95"
             >
-              <i className="fas fa-calendar-plus text-sm"></i> Preschedule Add
+              <i className="fas fa-bolt-auto text-emerald-300"></i> Auto Inflow
             </button>
             <button 
               onClick={() => openAction('EXPENSE', true)}
-              className="bg-rose-500/20 hover:bg-rose-500/40 text-rose-100 px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 border border-rose-400/20 active:scale-95"
+              className="bg-rose-400/20 hover:bg-rose-400/30 text-rose-50 px-6 py-4 rounded-3xl text-xs font-black transition-all flex items-center justify-center gap-3 border border-rose-400/20 active:scale-95"
             >
-              <i className="fas fa-calendar-minus text-sm"></i> Preschedule Reduce
+              <i className="fas fa-clock text-rose-300"></i> Auto Outflow
             </button>
           </div>
 
           <button 
             onClick={onNavigateToScheduled}
-            className="w-full bg-slate-900/40 hover:bg-slate-900/60 py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-white/5"
+            className="w-full bg-black/20 hover:bg-black/40 py-4 rounded-2xl text-xs font-black tracking-widest uppercase transition-all flex items-center justify-center gap-3 border border-white/5"
           >
-            <ICONS.Calendar /> Manage Scheduled Transactions
+            <i className="fas fa-layer-group"></i> Manage Automated Flow
           </button>
         </div>
         
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-indigo-400/20 rounded-full blur-2xl"></div>
+        {/* Animated Orbs for Liquid Crystal effect */}
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute -left-10 -bottom-10 w-64 h-64 bg-indigo-300/20 rounded-full blur-[80px]"></div>
       </div>
 
-      {/* Capital Sources Section */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Capital Sources</h3>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide no-scrollbar -mx-4 px-4">
+      {/* Capital Sources */}
+      <div className="space-y-6">
+        <h3 className="text-xs font-black uppercase tracking-[0.25em] text-white/50 px-2">Liquid Accounts</h3>
+        <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar -mx-2 px-2">
           {state.accounts.map((acc) => (
             <div 
               key={acc.id} 
-              className="flex-shrink-0 w-40 bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center text-center transition-transform active:scale-95"
+              className="flex-shrink-0 w-48 liquid-glass rounded-[2.5rem] p-6 flex flex-col items-center text-center transition-all hover:-translate-y-2 active:scale-95 group"
             >
-              <div className={`w-12 h-12 ${acc.color} text-white rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-${acc.color.split('-')[1]}-100`}>
-                <i className={`fas fa-${acc.icon} text-xl`}></i>
+              <div className={`w-16 h-16 ${acc.color} text-white rounded-[1.5rem] flex items-center justify-center mb-4 shadow-2xl group-hover:rotate-6 transition-transform`}>
+                <i className={`fas fa-${acc.icon} text-2xl`}></i>
               </div>
-              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">{acc.name}</p>
-              <p className="font-bold text-slate-800">{currencySymbol}{acc.balance.toLocaleString()}</p>
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{acc.name}</p>
+              <p className="text-xl font-black text-slate-800">{currencySymbol}{acc.balance.toLocaleString()}</p>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Quick Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 text-emerald-600 mb-1">
-            <ICONS.TrendingUp />
-            <p className="text-xs font-black uppercase tracking-widest">Today's Inflow</p>
+        <div className="liquid-glass rounded-[2.5rem] p-8 border-emerald-500/10">
+          <div className="flex items-center gap-3 text-emerald-600 mb-2">
+            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center"><i className="fas fa-arrow-up text-xs"></i></div>
+            <p className="text-[11px] font-black uppercase tracking-widest">Today's Inflow</p>
           </div>
-          <h2 className="text-3xl font-black text-slate-800">{currencySymbol}{todayIncome.toLocaleString()}</h2>
+          <h2 className="text-4xl font-black text-slate-800">{currencySymbol}{todayIncome.toLocaleString()}</h2>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 text-rose-500 mb-1">
-            <ICONS.TrendingDown />
-            <p className="text-xs font-black uppercase tracking-widest">Today's Outflow</p>
+        <div className="liquid-glass rounded-[2.5rem] p-8 border-rose-500/10">
+          <div className="flex items-center gap-3 text-rose-500 mb-2">
+            <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center"><i className="fas fa-arrow-down text-xs"></i></div>
+            <p className="text-[11px] font-black uppercase tracking-widest">Today's Outflow</p>
           </div>
-          <h2 className="text-3xl font-black text-slate-800">{currencySymbol}{todayExpenses.toLocaleString()}</h2>
+          <h2 className="text-4xl font-black text-slate-800">{currencySymbol}{todayExpenses.toLocaleString()}</h2>
         </div>
       </div>
 
+      {/* Chart & AI */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-lg font-black text-slate-800 mb-6">Financial Pulse</h3>
-          <div className="h-64 w-full">
+        <div className="lg:col-span-2 liquid-glass rounded-[3rem] p-8">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-lg font-black text-slate-800 tracking-tight">Market Pulse</h3>
+            <div className="flex gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+            </div>
+          </div>
+          <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyHistoryData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 'bold'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 'bold'}} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: '900'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: '900'}} />
                 <Tooltip 
-                  cursor={{fill: '#f8fafc'}}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                  cursor={{fill: 'rgba(255,255,255,0.4)', radius: 10}}
+                  contentStyle={{ borderRadius: '24px', border: 'none', backdropFilter: 'blur(20px)', background: 'rgba(255,255,255,0.8)', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', fontWeight: '900' }}
                 />
-                <Bar dataKey="Income" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Expense" fill="#fb7185" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar dataKey="Income" fill="#6366f1" radius={[8, 8, 8, 8]} barSize={12} />
+                <Bar dataKey="Expense" fill="#fb7185" radius={[8, 8, 8, 8]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-3xl p-6 text-white flex flex-col shadow-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+        <div className="bg-slate-900 rounded-[3rem] p-8 text-white flex flex-col shadow-2xl relative overflow-hidden group">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-indigo-500/20 shadow-2xl animate-pulse">
               <ICONS.Robot />
             </div>
             <div>
-              <h3 className="font-bold">AI Advisor</h3>
-              <p className="text-[9px] text-indigo-400 font-black uppercase tracking-widest">Gemini Insight Engine</p>
+              <h3 className="font-black text-lg tracking-tight">AI Oracle</h3>
+              <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em]">Liquid Insight</p>
             </div>
           </div>
-          <div className="flex-1 text-sm text-slate-300 leading-relaxed italic border-l-2 border-indigo-500 pl-4 py-1">
-            "{advice}"
+          <div className="flex-1 text-sm text-slate-300 leading-relaxed font-medium">
+            <span className="text-indigo-400 font-black text-2xl leading-none">"</span>
+            {advice}
+            <span className="text-indigo-400 font-black text-2xl leading-none">"</span>
           </div>
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
         </div>
       </div>
 
-      {/* Quick Action Modal */}
+      {/* Modal Overhaul */}
       {isAdding && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-200 overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center mb-6">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-2xl z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          <div className="bg-white/90 backdrop-blur-3xl rounded-t-[3.5rem] md:rounded-[3.5rem] w-full max-w-lg p-10 shadow-2xl animate-in slide-in-from-bottom duration-300 border border-white/40 max-h-[90vh] overflow-y-auto no-scrollbar">
+            <div className="flex justify-between items-center mb-8">
               <div>
-                <h3 className="text-2xl font-black text-slate-800">
-                  {isRecurring ? 'Schedule' : (form.type === 'INCOME' ? 'Add Fund' : 'Reduce Fund')}
+                <h3 className="text-3xl font-black text-slate-900 tracking-tighter">
+                  {isRecurring ? 'Automate Flow' : (form.type === 'INCOME' ? 'Injection' : 'Extraction')}
                 </h3>
-                {isRecurring && <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">Recurring {form.type.toLowerCase()}</p>}
               </div>
-              <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600 p-2"><i className="fas fa-times text-xl"></i></button>
+              <button onClick={() => setIsAdding(false)} className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+                <i className="fas fa-times"></i>
+              </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl">{currencySymbol}</div>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="relative group">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-3xl group-focus-within:text-indigo-500 transition-colors">{currencySymbol}</div>
                 <input
                   type="number"
                   required
                   autoFocus
                   value={form.amount || ''}
                   onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) })}
-                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-10 pr-4 py-5 text-3xl font-black text-slate-800 outline-none focus:border-indigo-500 transition-all"
-                  placeholder="0.00"
+                  className="w-full bg-slate-100/50 border-2 border-transparent rounded-[2rem] pl-16 pr-8 py-8 text-5xl font-black text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner"
+                  placeholder="0"
                 />
               </div>
 
-              {/* Recurring Toggle */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isRecurring ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                    <i className="fas fa-redo"></i>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-slate-700">Make Recurring</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase">Automate this inflow</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
                 <button 
-                  type="button"
-                  onClick={() => setIsRecurring(!isRecurring)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${isRecurring ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                  type="button" 
+                  onClick={() => openAction('INCOME', isRecurring)}
+                  className={`py-5 rounded-[1.5rem] font-black tracking-widest text-xs uppercase transition-all ${form.type === 'INCOME' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-slate-100 text-slate-400'}`}
                 >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isRecurring ? 'left-7' : 'left-1'}`}></div>
+                  Inflow
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => openAction('EXPENSE', isRecurring)}
+                  className={`py-5 rounded-[1.5rem] font-black tracking-widest text-xs uppercase transition-all ${form.type === 'EXPENSE' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-slate-100 text-slate-400'}`}
+                >
+                  Outflow
                 </button>
               </div>
 
               {isRecurring && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Frequency</label>
+                <div className="p-6 bg-slate-100/50 rounded-[2rem] space-y-4 border border-slate-200">
+                  <div className="grid grid-cols-2 gap-4">
                     <select
                       value={form.frequency}
                       onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold text-slate-700"
+                      className="w-full bg-white rounded-2xl px-5 py-4 font-black text-xs text-slate-800 outline-none"
                     >
                       <option value="DAILY">Daily</option>
                       <option value="WEEKLY">Weekly</option>
                       <option value="MONTHLY">Monthly</option>
-                      <option value="ONCE">Once</option>
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Start Date</label>
                     <input
                       type="date"
                       value={form.startDate}
                       onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold text-slate-700"
+                      className="w-full bg-white rounded-2xl px-5 py-4 font-black text-xs text-slate-800 outline-none"
                     />
                   </div>
                 </div>
               )}
 
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Capital Source</label>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-4">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-2">Account Target</p>
+                <div className="grid grid-cols-2 gap-3">
                   {state.accounts.map(acc => (
                     <button
                       key={acc.id}
                       type="button"
                       onClick={() => setForm({ ...form, accountId: acc.id })}
-                      className={`py-3 px-2 rounded-xl text-xs font-bold border-2 transition-all flex items-center gap-3 ${
-                        form.accountId === acc.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
+                      className={`py-4 px-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 border-2 ${
+                        form.accountId === acc.id ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-500 border-slate-100'
                       }`}
                     >
                       <i className={`fas fa-${acc.icon}`}></i>
@@ -360,16 +364,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onN
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
-                <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-4">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-2">Classification</p>
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                   {(form.type === 'INCOME' ? CATEGORIES.INCOME : CATEGORIES.EXPENSE).map(cat => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setForm({ ...form, category: cat })}
-                      className={`py-2 px-1 rounded-xl text-[10px] font-bold border-2 transition-all ${
-                        form.category === cat ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
+                      className={`flex-shrink-0 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
+                        form.category === cat ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-100 hover:border-indigo-200'
                       }`}
                     >
                       {cat}
@@ -382,17 +386,15 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onN
                 type="text"
                 value={form.note}
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
-                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 transition-all text-sm font-medium"
-                placeholder="Write a short note..."
+                className="w-full bg-slate-100 border-2 border-transparent rounded-2xl px-6 py-5 outline-none focus:bg-white focus:border-indigo-500 font-bold transition-all"
+                placeholder="Transaction memo..."
               />
 
               <button
                 type="submit"
-                className={`w-full py-5 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 ${
-                  form.type === 'INCOME' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-indigo-600 shadow-indigo-100'
-                }`}
+                className="w-full py-6 rounded-[2rem] font-black text-white bg-indigo-600 shadow-2xl shadow-indigo-200 active:scale-95 transition-all uppercase tracking-[0.2em] text-sm"
               >
-                {isRecurring ? 'Confirm Schedule' : `Confirm ${form.type === 'INCOME' ? 'Inflow' : 'Outflow'}`}
+                Validate Transaction
               </button>
             </form>
           </div>
