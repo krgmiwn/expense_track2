@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { UserProfile } from '../types';
 
-// Add global declaration to fix TypeScript errors for the Google Identity Services SDK on the window object
 declare global {
   interface Window {
     google: any;
@@ -15,10 +14,8 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   useEffect(() => {
-    /* global google */
     const handleCredentialResponse = (response: any) => {
       try {
-        // Decode JWT to get user info (simplified for demo)
         const base64Url = response.credential.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
@@ -31,23 +28,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           name: payload.name,
           email: payload.email,
           picture: payload.picture,
-          currency: 'BDT'
+          currency: 'BDT',
+          isAuthenticated: true
         });
       } catch (error) {
         console.error("Error decoding Google credential:", error);
       }
     };
 
-    // Initialize Google Sign-In
     const initGoogle = () => {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
-          /**
-           * IMPORTANT: You MUST replace this with your actual Client ID 
-           * from the Google Cloud Console to fix the "Error 401: invalid_client".
-           * Visit: https://console.cloud.google.com/
-           */
-          client_id: "543781254327-placeholder.apps.googleusercontent.com", 
+          client_id: "328953328253-qifhee0a8v8pf5u3gaankb48uu8lc1oq.apps.googleusercontent.com", 
           callback: handleCredentialResponse,
           auto_select: false,
           use_fedcm_for_prompt: false,
@@ -61,12 +53,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             { theme: "outline", size: "large", width: "100%", shape: "pill" }
           );
         }
-        
-        window.google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed()) {
-            console.log("One Tap not displayed:", notification.getNotDisplayedReason());
-          }
-        });
       }
     };
 
@@ -83,9 +69,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   }, [onLogin]);
 
+  const handleGuestLogin = () => {
+    onLogin({
+      name: 'Guest User',
+      email: 'guest@fintrack.local',
+      currency: 'BDT',
+      isAuthenticated: true
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-100/40 rounded-full blur-[120px]"></div>
 
@@ -102,8 +96,23 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
             <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 text-center">Secure Access</h2>
             <div id="googleBtn" className="w-full min-h-[50px] flex justify-center"></div>
-            <p className="mt-2 text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">
-              Developer: Update Client ID in Google Console
+            
+            <div className="mt-4 pt-4 border-t border-slate-200/60">
+              <button 
+                onClick={handleGuestLogin}
+                className="w-full py-3 px-4 bg-white border border-slate-200 rounded-full text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-user-circle"></i> Continue as Guest
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+            <p className="text-[10px] text-amber-700 font-bold leading-tight uppercase tracking-tight">
+              <i className="fas fa-info-circle mr-1"></i> Developer Tip:
+            </p>
+            <p className="text-[10px] text-amber-600 mt-1">
+              Ensure <code className="bg-amber-100 px-1 rounded">{window.location.origin}</code> is added to "Authorized JavaScript origins" in Google Console.
             </p>
           </div>
 
