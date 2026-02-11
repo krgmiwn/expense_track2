@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserProfile } from '../types';
 
 declare global {
@@ -13,6 +13,8 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [showOriginError, setShowOriginError] = useState(false);
+
   useEffect(() => {
     const handleCredentialResponse = (response: any) => {
       try {
@@ -38,20 +40,25 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     const initGoogle = () => {
       if (window.google && window.google.accounts) {
-        window.google.accounts.id.initialize({
-          client_id: "328953328253-qifhee0a8v8pf5u3gaankb48uu8lc1oq.apps.googleusercontent.com", 
-          callback: handleCredentialResponse,
-          auto_select: false,
-          use_fedcm_for_prompt: false,
-          itp_support: true,
-        });
+        try {
+          window.google.accounts.id.initialize({
+            client_id: "328953328253-qifhee0a8v8pf5u3gaankb48uu8lc1oq.apps.googleusercontent.com", 
+            callback: handleCredentialResponse,
+            auto_select: false,
+            use_fedcm_for_prompt: false,
+            itp_support: true,
+          });
 
-        const btnParent = document.getElementById("googleBtn");
-        if (btnParent) {
-          window.google.accounts.id.renderButton(
-            btnParent,
-            { theme: "outline", size: "large", width: "100%", shape: "pill" }
-          );
+          const btnParent = document.getElementById("googleBtn");
+          if (btnParent) {
+            window.google.accounts.id.renderButton(
+              btnParent,
+              { theme: "outline", size: "large", width: "100%", shape: "pill" }
+            );
+          }
+        } catch (e) {
+          console.error("GSI Init Error:", e);
+          setShowOriginError(true);
         }
       }
     };
@@ -93,33 +100,38 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 text-center">Secure Access</h2>
-            <div id="googleBtn" className="w-full min-h-[50px] flex justify-center"></div>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
+            <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 text-center">Get Started</h2>
             
-            <div className="mt-4 pt-4 border-t border-slate-200/60">
-              <button 
-                onClick={handleGuestLogin}
-                className="w-full py-3 px-4 bg-white border border-slate-200 rounded-full text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <i className="fas fa-user-circle"></i> Continue as Guest
-              </button>
+            <button 
+              onClick={handleGuestLogin}
+              className="w-full py-4 px-6 bg-indigo-600 text-white rounded-full font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-95 mb-6"
+            >
+              <i className="fas fa-rocket"></i> Continue as Guest
+            </button>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-[1px] flex-1 bg-slate-200"></div>
+              <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Or login with</span>
+              <div className="h-[1px] flex-1 bg-slate-200"></div>
             </div>
+
+            <div id="googleBtn" className="w-full min-h-[50px] flex justify-center overflow-hidden"></div>
           </div>
 
           <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-            <p className="text-[10px] text-amber-700 font-bold leading-tight uppercase tracking-tight">
-              <i className="fas fa-info-circle mr-1"></i> Developer Tip:
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-xs">
+                <i className="fas fa-tools"></i>
+              </div>
+              <p className="text-[10px] text-amber-700 font-black leading-tight uppercase tracking-tight">
+                Developer Configuration
+              </p>
+            </div>
+            <p className="text-[10px] text-amber-600 leading-relaxed">
+              If Google Login shows an "Origin Error", copy this URL and add it to your Authorized JavaScript Origins in the Google Console:<br/>
+              <code className="bg-amber-100/50 px-1.5 py-0.5 rounded text-amber-800 font-bold block mt-1 break-all">{window.location.origin}</code>
             </p>
-            <p className="text-[10px] text-amber-600 mt-1">
-              Ensure <code className="bg-amber-100 px-1 rounded">{window.location.origin}</code> is added to "Authorized JavaScript origins" in Google Console.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 py-2">
-            <div className="h-[1px] flex-1 bg-slate-100"></div>
-            <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Trust & Privacy</span>
-            <div className="h-[1px] flex-1 bg-slate-100"></div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -145,7 +157,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
 
         <p className="mt-10 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest">
-          By signing in you agree to our <br/>
+          By continuing you agree to our <br/>
           <span className="text-indigo-500 cursor-pointer">Terms</span> & <span className="text-indigo-500 cursor-pointer">Privacy Policy</span>
         </p>
       </div>

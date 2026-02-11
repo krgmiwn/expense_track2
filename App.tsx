@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppState, Transaction, ScheduledTransaction, UserProfile, Account, AccountType } from './types';
+import { AppState, Transaction, ScheduledTransaction, UserProfile, Account, AccountType, Frequency } from './types';
 import Dashboard from './components/Dashboard';
 import History from './components/History';
 import Scheduled from './components/Scheduled';
@@ -34,6 +34,81 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_STATE;
   });
   const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'scheduled' | 'settings'>('dashboard');
+
+  // Process scheduled transactions on load
+  useEffect(() => {
+    const processScheduled = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let hasChanges = false;
+      const newTransactions: Transaction[] = [];
+      const updatedScheduled = state.scheduled.map(stx => {
+        const startDate = new Date(stx.startDate);
+        const lastProcessed = stx.lastProcessed ? new Date(stx.lastProcessed) : null;
+        
+        let shouldProcess = false;
+        
+        // Logic to determine if recurring transaction should trigger
+        if (startDate <= today) {
+          if (!lastProcessed) {
+            shouldProcess = true;
+          } else {
+            const diffDays = Math.floor((today.getTime() - lastProcessed.getTime()) / (1000 * 3600 * 24));
+            
+            if (stx.frequency === 'DAILY' && diffDays >= 1) shouldProcess = true;
+            if (stx.frequency === 'WEEKLY' && diffDays >= 7) shouldProcess = true;
+            if (stx.frequency === 'MONTHLY') {
+              const months = (today.getFullYear() - lastProcessed.getFullYear()) * 12 + (today.getMonth() - lastProcessed.getMonth());
+              if (months >= 1) shouldProcess = true;
+            }
+          }
+        }
+
+        if (shouldProcess) {
+          hasChanges = true;
+          const tx: Transaction = {
+            id: Math.random().toString(36).substr(2, 9),
+            amount: stx.amount,
+            category: stx.category,
+            type: stx.type,
+            accountId: stx.accountId,
+            date: today.toISOString(),
+            note: `[Auto] ${stx.note || stx.category}`
+          };
+          newTransactions.push(tx);
+          return { ...stx, lastProcessed: today.toISOString() };
+        }
+        return stx;
+      });
+
+      if (hasChanges) {
+        setState(prev => {
+          const updatedAccounts = [...prev.accounts];
+          newTransactions.forEach(tx => {
+            const idx = updatedAccounts.findIndex(a => a.id === tx.accountId);
+            if (idx !== -1) {
+              updatedAccounts[idx] = {
+                ...updatedAccounts[idx],
+                balance: tx.type === 'INCOME' ? updatedAccounts[idx].balance + tx.amount : updatedAccounts[idx].balance - tx.amount
+              };
+            }
+          });
+
+          return {
+            ...prev,
+            transactions: [...newTransactions, ...prev.transactions],
+            scheduled: updatedScheduled,
+            accounts: updatedAccounts
+          };
+        });
+      }
+    };
+
+    if (state.profile.isAuthenticated) {
+      processScheduled();
+    }
+  }, [state.profile.isAuthenticated]);
 
   useEffect(() => {
     localStorage.setItem('fintrack_state_v3', JSON.stringify(state));
