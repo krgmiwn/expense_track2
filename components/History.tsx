@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { Transaction, CURRENCIES } from '../types';
-import { ICONS } from '../constants';
 
 interface HistoryProps {
   transactions: Transaction[];
@@ -11,110 +10,41 @@ interface HistoryProps {
 
 const History: React.FC<HistoryProps> = ({ transactions, onDelete, currency }) => {
   const [filter, setFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
-  const [search, setSearch] = useState('');
-  
-  const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
+  const symbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
 
-  const filtered = useMemo(() => {
-    return transactions.filter(t => {
-      const matchesType = filter === 'ALL' || t.type === filter;
-      const matchesSearch = 
-        t.category.toLowerCase().includes(search.toLowerCase()) || 
-        t.note.toLowerCase().includes(search.toLowerCase());
-      return matchesType && matchesSearch;
-    });
-  }, [transactions, filter, search]);
+  const filtered = useMemo(() => 
+    transactions.filter(t => filter === 'ALL' || t.type === filter),
+  [transactions, filter]);
 
   return (
-    <div className="liquid-glass rounded-[3rem] p-8 shadow-2xl border border-white/40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-8 mb-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <h3 className="text-xl font-black text-slate-800 tracking-tight">Transaction Ledger</h3>
-          <div className="flex bg-white/30 backdrop-blur-md p-1.5 rounded-2xl border border-white/20">
-            {(['ALL', 'INCOME', 'EXPENSE'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-6 py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${
-                  filter === f ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative group">
-          <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
-          <input 
-            type="text"
-            placeholder="Search flow or memo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-14 pr-6 py-5 bg-white/40 backdrop-blur-xl border border-white/30 rounded-[1.5rem] text-sm font-bold outline-none focus:bg-white/60 focus:border-indigo-300 transition-all shadow-inner placeholder:text-slate-400 text-slate-800"
-          />
+    <div className="space-y-3">
+      <div className="flex justify-between items-center bg-white/5 p-2 rounded-2xl border border-white/5">
+        <h3 className="text-[9px] font-black text-white/30 uppercase tracking-widest px-2">Recent Flow</h3>
+        <div className="flex gap-1">
+          {['ALL', 'INC', 'EXP'].map(f => (
+            <button key={f} onClick={() => setFilter(f === 'ALL' ? 'ALL' : (f === 'INC' ? 'INCOME' : 'EXPENSE'))} className={`px-3 py-1 rounded-lg text-[7px] font-black transition-all ${filter === (f === 'ALL' ? 'ALL' : (f === 'INC' ? 'INCOME' : 'EXPENSE')) ? 'bg-indigo-600 text-white' : 'text-white/20'}`}>{f}</button>
+          ))}
         </div>
       </div>
 
-      <div className="overflow-x-auto no-scrollbar">
-        <table className="w-full text-left border-separate border-spacing-y-3">
-          <thead>
-            <tr className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-              <th className="px-4 pb-2">Timestamp</th>
-              <th className="px-4 pb-2">Source</th>
-              <th className="px-4 pb-2">Classification</th>
-              <th className="px-4 pb-2">Magnitude</th>
-              <th className="px-4 pb-2 text-right">Control</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length > 0 ? filtered.map((t) => (
-              <tr key={t.id} className="group transition-all hover:scale-[1.01]">
-                <td className="py-5 px-4 first:rounded-l-[1.5rem] bg-white/20 backdrop-blur-sm border-y border-l border-white/20 text-xs font-bold text-slate-500">
-                  {new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
-                </td>
-                <td className="py-5 px-4 bg-white/20 backdrop-blur-sm border-y border-white/20">
-                  <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-50/50 px-2 py-1 rounded-lg border border-indigo-100/30">{t.accountId}</span>
-                </td>
-                <td className="py-5 px-4 bg-white/20 backdrop-blur-sm border-y border-white/20">
-                  <div className="flex flex-col">
-                    <span className={`text-[11px] font-black uppercase tracking-wider ${
-                      t.type === 'INCOME' ? 'text-emerald-600' : 'text-slate-700'
-                    }`}>
-                      {t.category}
-                    </span>
-                    {t.note && <span className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[120px] font-medium opacity-70">{t.note}</span>}
-                  </div>
-                </td>
-                <td className="py-5 px-4 bg-white/20 backdrop-blur-sm border-y border-white/20">
-                  <span className={`text-sm font-black tracking-tight ${t.type === 'INCOME' ? 'text-emerald-600' : 'text-slate-800'}`}>
-                    {t.type === 'INCOME' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
-                  </span>
-                </td>
-                <td className="py-5 px-4 last:rounded-r-[1.5rem] bg-white/20 backdrop-blur-sm border-y border-r border-white/20 text-right">
-                  <button
-                    onClick={() => onDelete(t.id)}
-                    className="w-10 h-10 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl transition-all active:scale-90"
-                  >
-                    <ICONS.Trash />
-                  </button>
-                </td>
-              </tr>
-            )) : (
-              <tr>
-                <td colSpan={5} className="py-24 text-center">
-                  <div className="flex flex-col items-center opacity-30">
-                    <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-6 text-3xl">
-                      <i className="fas fa-box-open"></i>
-                    </div>
-                    <p className="text-sm font-black uppercase tracking-widest text-slate-400">Empty Ledger</p>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="space-y-2">
+        {filtered.length > 0 ? filtered.map(t => (
+          <div key={t.id} className="bg-slate-900 border border-white/5 rounded-2xl p-3 flex justify-between items-center shadow-md">
+            <div className="flex items-center gap-3">
+              <div className={`w-1.5 h-6 rounded-full ${t.type === 'INCOME' ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+              <div>
+                <p className="text-[9px] font-black text-white/90 uppercase">{t.category}</p>
+                <p className="text-[7px] font-bold text-white/20 uppercase tracking-widest">{new Date(t.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} • {t.accountId}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className={`text-[10px] font-black ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-white/80'}`}>{t.type === 'INCOME' ? '+' : '-'}{symbol}{t.amount.toLocaleString()}</span>
+              <button onClick={() => onDelete(t.id)} className="text-white/10 hover:text-rose-500 text-[8px]"><i className="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+        )) : (
+          <div className="py-20 text-center opacity-10 text-[8px] font-black uppercase tracking-[0.5em]">No Records</div>
+        )}
       </div>
     </div>
   );
