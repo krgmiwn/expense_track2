@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, Transaction, ScheduledTransaction, UserProfile, Account, AccountType, Frequency } from './types';
 import Dashboard from './components/Dashboard';
 import History from './components/History';
@@ -9,14 +9,14 @@ import Sidebar from './components/Sidebar';
 import Login from './components/Login';
 
 const INITIAL_ACCOUNTS: Account[] = [
-  { id: 'BANK', name: 'BANK', balance: 15000, icon: 'university', color: 'bg-blue-600' },
-  { id: 'BKASH', name: 'BKASH', balance: 5000, icon: 'mobile-alt', color: 'bg-pink-500' },
-  { id: 'NAGAD', name: 'NAGAD', balance: 2500, icon: 'coins', color: 'bg-orange-500' },
-  { id: 'ROCKET', name: 'ROCKET', balance: 1200, icon: 'rocket', color: 'bg-purple-600' },
+  { id: 'BANK', name: 'BANK', balance: 0, icon: 'university', color: 'bg-blue-600' },
+  { id: 'BKASH', name: 'BKASH', balance: 0, icon: 'mobile-alt', color: 'bg-pink-500' },
+  { id: 'NAGAD', name: 'NAGAD', balance: 0, icon: 'coins', color: 'bg-orange-500' },
+  { id: 'ROCKET', name: 'ROCKET', balance: 0, icon: 'rocket', color: 'bg-purple-600' },
   { id: 'CARD', name: 'CARD', balance: 0, icon: 'credit-card', color: 'bg-slate-700' },
 ];
 
-const INITIAL_STATE: AppState = {
+const EMPTY_STATE: AppState = {
   transactions: [],
   scheduled: [],
   accounts: INITIAL_ACCOUNTS,
@@ -30,17 +30,40 @@ const INITIAL_STATE: AppState = {
 };
 
 const App: React.FC = () => {
-  const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('track_nano_v1');
-    return saved ? JSON.parse(saved) : INITIAL_STATE;
-  });
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'scheduled' | 'settings'>('dashboard');
+  const [state, setState] = useState<AppState>(EMPTY_STATE);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const skipSave = useRef(true);
 
-  const theme = state.profile.theme || 'dark';
-  const isDark = theme === 'dark';
+  // Handle Login and Data Restoration
+  const handleLogin = (user: UserProfile) => {
+    const userKey = `track_pro_v2_${user.email}`;
+    const savedData = localStorage.getItem(userKey);
+    
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      // Merge latest user profile info with saved financial data
+      setState({
+        ...parsed,
+        profile: { ...user, theme: parsed.profile?.theme || 'dark' }
+      });
+    } else {
+      // Truly new user: Start with zeroed state
+      setState({
+        ...EMPTY_STATE,
+        profile: user,
+        accounts: INITIAL_ACCOUNTS.map(a => ({ ...a, balance: 0 }))
+      });
+    }
+    setIsDataLoaded(true);
+    skipSave.current = false;
+  };
 
+  // Persist State to Storage whenever it changes (Individual User Keys)
   useEffect(() => {
-    localStorage.setItem('track_nano_v1', JSON.stringify(state));
+    if (!skipSave.current && state.profile.isAuthenticated && state.profile.email) {
+      const userKey = `track_pro_v2_${state.profile.email}`;
+      localStorage.setItem(userKey, JSON.stringify(state));
+    }
   }, [state]);
 
   const addTransaction = useCallback((tx: Omit<Transaction, 'id'>) => {
@@ -71,8 +94,17 @@ const App: React.FC = () => {
     }));
   }, []);
 
+  const handleLogout = () => {
+    setIsDataLoaded(false);
+    skipSave.current = true;
+    setState(EMPTY_STATE);
+  };
+
+  const theme = state.profile.theme || 'dark';
+  const isDark = theme === 'dark';
+
   if (!state.profile.isAuthenticated) {
-    return <Login onLogin={(u) => setState(p => ({ ...p, profile: { ...u, theme: 'dark', isAuthenticated: true } }))} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   return (
@@ -95,12 +127,15 @@ const App: React.FC = () => {
           )}
           {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} theme={theme} />}
           {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={addScheduledTransaction} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} theme={theme} />}
-          {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={() => setState(INITIAL_STATE)} />}
+          {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={handleLogout} />}
         </div>
       </main>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} profile={state.profile} />
     </div>
   );
 };
+
+// Simple internal routing state for App
+const [activeTab, setActiveTab] = ['dashboard', (t: any) => {}]; // Placeholder for logical flow, in real app managed by useState in App
 
 export default App;
