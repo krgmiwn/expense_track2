@@ -8,6 +8,9 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Login from './components/Login';
 
+const SESSION_KEY = 'track_pro_session_v2';
+const DATA_PREFIX = 'track_pro_v2_';
+
 const INITIAL_ACCOUNTS: Account[] = [
   { id: 'BANK', name: 'BANK', balance: 0, icon: 'university', color: 'bg-blue-600' },
   { id: 'BKASH', name: 'BKASH', balance: 0, icon: 'mobile-alt', color: 'bg-pink-500' },
@@ -30,29 +33,43 @@ const EMPTY_STATE: AppState = {
 };
 
 const App: React.FC = () => {
-  const [state, setState] = useState<AppState>(EMPTY_STATE);
+  // Initialize state from session if available
+  const [state, setState] = useState<AppState>(() => {
+    const lastSessionEmail = localStorage.getItem(SESSION_KEY);
+    if (lastSessionEmail) {
+      const savedData = localStorage.getItem(`${DATA_PREFIX}${lastSessionEmail}`);
+      if (savedData) {
+        return JSON.parse(savedData);
+      }
+    }
+    return EMPTY_STATE;
+  });
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'scheduled' | 'settings'>('dashboard');
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const skipSave = useRef(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(() => !!localStorage.getItem(SESSION_KEY));
+  const skipSave = useRef(!localStorage.getItem(SESSION_KEY));
 
   // Handle Login and Data Restoration
   const handleLogin = (user: UserProfile) => {
-    const userKey = `track_pro_v2_${user.email}`;
+    const userKey = `${DATA_PREFIX}${user.email}`;
     const savedData = localStorage.getItem(userKey);
+    
+    localStorage.setItem(SESSION_KEY, user.email);
     
     if (savedData) {
       const parsed = JSON.parse(savedData);
       setState({
         ...parsed,
-        profile: { ...user, theme: parsed.profile?.theme || 'dark' }
+        profile: { ...user, theme: parsed.profile?.theme || 'dark', isAuthenticated: true }
       });
     } else {
       setState({
         ...EMPTY_STATE,
-        profile: user,
+        profile: { ...user, isAuthenticated: true },
         accounts: INITIAL_ACCOUNTS.map(a => ({ ...a, balance: 0 }))
       });
     }
+    
     setIsDataLoaded(true);
     skipSave.current = false;
   };
@@ -60,7 +77,7 @@ const App: React.FC = () => {
   // Persist State to Storage whenever it changes
   useEffect(() => {
     if (!skipSave.current && state.profile.isAuthenticated && state.profile.email) {
-      const userKey = `track_pro_v2_${state.profile.email}`;
+      const userKey = `${DATA_PREFIX}${state.profile.email}`;
       localStorage.setItem(userKey, JSON.stringify(state));
     }
   }, [state]);
@@ -94,6 +111,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem(SESSION_KEY);
     setIsDataLoaded(false);
     skipSave.current = true;
     setState(EMPTY_STATE);
