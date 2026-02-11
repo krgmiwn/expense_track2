@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppState, Transaction, ScheduledTransaction, CURRENCIES, AccountType, Frequency } from '../types';
+import { AppState, Transaction, ScheduledTransaction, CURRENCIES, AccountType } from '../types';
 import { getFinancialAdvice, parseNeuralCommand } from '../services/geminiService';
 
 interface DashboardProps {
@@ -10,17 +10,15 @@ interface DashboardProps {
   onNavigateToScheduled: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled }) => {
-  const [advice, setAdvice] = useState<string>('Neural sync active.');
+const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
+  const [advice, setAdvice] = useState<string>('System ready.');
   const [isAdding, setIsAdding] = useState(false);
-  const [prescheduleMode, setPrescheduleMode] = useState(false);
   const [neuralInput, setNeuralInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [form, setForm] = useState({
     amount: 0, category: 'Other', type: 'EXPENSE' as 'INCOME' | 'EXPENSE',
-    accountId: 'BANK' as AccountType, date: new Date().toISOString(),
-    frequency: 'MONTHLY' as Frequency, startDate: new Date().toISOString().split('T')[0], note: ''
+    accountId: 'BANK' as AccountType, date: new Date().toISOString(), note: ''
   });
 
   useEffect(() => {
@@ -44,80 +42,72 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled }) =
   };
 
   return (
-    <div className="space-y-3">
-      {/* Ultra-Slim Neural Command */}
-      <div className="bg-slate-900 border border-white/5 rounded-2xl p-1 shadow-lg">
-        <form onSubmit={handleNeural} className="relative flex items-center">
-          <i className={`fas fa-${isProcessing ? 'circle-notch animate-spin' : 'brain'} absolute left-3 text-[10px] text-indigo-500`}></i>
+    <div className="space-y-2">
+      {/* Nano Command Center */}
+      <div className="bg-slate-900 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
+        <div className="flex justify-between items-baseline">
+          <span className="text-[7px] font-black text-white/30 tracking-[0.3em] uppercase">Liquidity</span>
+          <span className="text-xl font-black text-white tracking-tighter">{symbol}{balance.toLocaleString()}</span>
+        </div>
+        <form onSubmit={handleNeural} className="relative flex items-center bg-black/40 rounded-lg p-0.5">
+          <i className={`fas fa-${isProcessing ? 'circle-notch animate-spin' : 'brain'} absolute left-2 text-[8px] text-indigo-500`}></i>
           <input 
-            type="text" placeholder="Neural: 'Lunch 200 Bank'" 
+            type="text" placeholder="Neural: 'Food 10 Bank'" 
             value={neuralInput} onChange={e => setNeuralInput(e.target.value)}
-            className="w-full bg-transparent text-white px-8 py-2.5 text-[10px] font-bold outline-none"
+            className="w-full bg-transparent text-white px-6 py-1.5 text-[9px] font-bold outline-none"
           />
         </form>
       </div>
 
-      {/* Slim-Cockpit Balance Card */}
-      <div className="liquid-card-gradient rounded-[1.8rem] p-5 text-white shadow-2xl relative overflow-hidden">
-        <div className="relative z-10 flex justify-between items-center">
-          <div>
-            <p className="text-[7px] font-black uppercase tracking-[0.3em] opacity-60 mb-0.5">Liquidity</p>
-            <h2 className="text-3xl font-black tracking-tighter">{symbol}{balance.toLocaleString()}</h2>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => { setForm(f => ({ ...f, type: 'INCOME' })); setIsAdding(true); }} className="w-9 h-9 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg active:scale-90"><i className="fas fa-plus text-xs"></i></button>
-            <button onClick={() => { setForm(f => ({ ...f, type: 'EXPENSE' })); setIsAdding(true); }} className="w-9 h-9 bg-rose-500 rounded-full flex items-center justify-center shadow-lg active:scale-90"><i className="fas fa-minus text-xs"></i></button>
-          </div>
-        </div>
+      {/* Micro Grid */}
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => { setForm(f => ({ ...f, type: 'INCOME' })); setIsAdding(true); }} className="bg-indigo-600 text-white py-2 rounded-lg text-[8px] font-black uppercase tracking-widest">+ Fund</button>
+        <button onClick={() => { setForm(f => ({ ...f, type: 'EXPENSE' })); setIsAdding(true); }} className="bg-slate-800 text-white/60 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest">- Reduce</button>
       </div>
 
-      {/* Micro-Account Pills */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+      {/* Horizontal Nano Scroll */}
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
         {state.accounts.map(acc => (
-          <div key={acc.id} className="flex-shrink-0 flex items-center gap-2 bg-white/5 border border-white/5 rounded-full px-3 py-1.5">
-            <div className={`w-4 h-4 ${acc.color} rounded-full flex items-center justify-center text-[7px]`}><i className={`fas fa-${acc.icon}`}></i></div>
-            <span className="text-[8px] font-black uppercase text-white/40">{acc.name}</span>
-            <span className="text-[9px] font-bold text-white/90">{symbol}{acc.balance.toLocaleString()}</span>
+          <div key={acc.id} className="flex-shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/5 rounded-full px-2 py-1">
+            <span className="text-[7px] font-black text-white/20 uppercase tracking-tighter">{acc.name}</span>
+            <span className="text-[8px] font-bold text-white/80">{symbol}{acc.balance.toLocaleString()}</span>
           </div>
         ))}
       </div>
 
       {/* AI Pulse Mini */}
-      <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-3 flex gap-3 items-start">
-        <div className="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0 shadow-lg"><i className="fas fa-robot text-[8px] text-white"></i></div>
-        <p className="text-[9px] text-white/70 leading-tight italic font-medium">"{advice}"</p>
+      <div className="bg-slate-900/40 rounded-xl p-2 flex gap-2 items-center border border-white/5">
+        <i className="fas fa-robot text-[7px] text-indigo-500"></i>
+        <p className="text-[8px] text-white/40 leading-tight truncate">"{advice}"</p>
       </div>
 
-      {/* Trajectory Compact */}
-      <div className="bg-white/5 border border-white/5 rounded-[1.8rem] p-4">
-        <div className="flex justify-between items-center mb-2 px-1">
-          <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Trajectory</span>
-          <span className="text-[7px] font-black uppercase text-emerald-400">Stable</span>
-        </div>
-        <div className="h-1 w-full bg-white/5 rounded-full"><div className="h-full bg-indigo-500 w-[65%] rounded-full shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div></div>
+      {/* Trajectory */}
+      <div className="bg-white/5 rounded-xl p-2 flex items-center gap-2">
+         <span className="text-[7px] font-black text-white/20 uppercase w-12">Trend</span>
+         <div className="flex-1 h-0.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 w-[70%]" /></div>
       </div>
 
-      {/* Transaction Modal Mobile-Optimized */}
+      {/* Mini Entry Modal */}
       {isAdding && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-end justify-center">
-          <div className="bg-white rounded-t-[2.5rem] w-full p-6 animate-in slide-in-from-bottom duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-black text-slate-900 uppercase">{form.type} ENTRY</h3>
-              <button onClick={() => setIsAdding(false)} className="w-8 h-8 bg-slate-100 rounded-full text-xs text-slate-400"><i className="fas fa-times"></i></button>
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-[240px] p-4 space-y-4">
+            <div className="flex justify-between items-center">
+               <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">{form.type}</span>
+               <button onClick={() => setIsAdding(false)} className="text-white/20"><i className="fas fa-times text-[10px]"></i></button>
             </div>
-            <form onSubmit={e => { e.preventDefault(); if (prescheduleMode) onAddScheduled(form); else onAdd(form); setIsAdding(false); }} className="space-y-4">
-              <input type="number" required autoFocus value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) })} className="w-full bg-slate-50 rounded-2xl p-4 text-3xl font-black text-slate-900 outline-none" placeholder="0" />
-              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
-                <button type="button" onClick={() => setPrescheduleMode(false)} className={`py-2 rounded-lg text-[8px] font-black uppercase transition-all ${!prescheduleMode ? 'bg-white shadow-sm' : 'text-slate-400'}`}>Instant</button>
-                <button type="button" onClick={() => setPrescheduleMode(true)} className={`py-2 rounded-lg text-[8px] font-black uppercase transition-all ${prescheduleMode ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>Schedule</button>
-              </div>
-              <div className="grid grid-cols-5 gap-1.5">
-                {state.accounts.map(acc => (
-                  <button key={acc.id} type="button" onClick={() => setForm({ ...form, accountId: acc.id })} className={`py-2 rounded-lg text-[7px] font-black border transition-all ${form.accountId === acc.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 border-transparent text-slate-400'}`}>{acc.name}</button>
-                ))}
-              </div>
-              <button type="submit" className="w-full py-3.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">Confirm</button>
-            </form>
+            <input 
+              type="number" required autoFocus 
+              value={form.amount || ''} 
+              onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) })} 
+              className="w-full bg-black/40 rounded-lg p-3 text-xl font-black text-white outline-none border border-white/5" 
+              placeholder="0" 
+            />
+            <div className="grid grid-cols-3 gap-1">
+               {state.accounts.map(a => (
+                 <button key={a.id} type="button" onClick={() => setForm({...form, accountId: a.id})} className={`p-1.5 rounded-md text-[6px] font-black border ${form.accountId === a.id ? 'bg-indigo-600 border-indigo-600' : 'bg-black border-white/5 text-white/20'}`}>{a.name}</button>
+               ))}
+            </div>
+            <button onClick={() => { onAdd(form); setIsAdding(false); }} className="w-full py-2 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase">Post</button>
           </div>
         </div>
       )}
