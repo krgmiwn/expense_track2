@@ -18,6 +18,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
   const [neuralInput, setNeuralInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
+  const isDark = state.profile.theme === 'dark';
+  
   // Account Editing State
   const [editingAccountId, setEditingAccountId] = useState<AccountType | null>(null);
   const [tempBalance, setTempBalance] = useState<string>('');
@@ -40,6 +42,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
     note: '',
     frequency: 'MONTHLY' as Frequency
   });
+
+  const aiNickname = state.profile.chatbotNickname || "Oracle";
 
   useEffect(() => {
     const fetch = async () => setAdvice(await getFinancialAdvice(state));
@@ -149,34 +153,39 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
     }
   };
 
+  const cardBg = isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200 shadow-sm';
+  const headingColor = isDark ? 'text-white' : 'text-slate-900';
+  const subHeadingColor = isDark ? 'text-white/30' : 'text-slate-400';
+  const inputBg = isDark ? 'bg-black/50' : 'bg-slate-100';
+
   return (
     <div className="space-y-6">
       {/* Hello Greeting Section */}
       <div className="px-1 -mb-4 flex items-center justify-between">
         <div className="animate-in fade-in slide-in-from-left-4 duration-500">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Greetings</p>
-          <h2 className="text-xl font-black text-white tracking-tight">Hello, {state.profile.name.split(' ')[0]}</h2>
+          <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Greetings</p>
+          <h2 className={`text-xl font-black tracking-tight ${headingColor}`}>Hello, {state.profile.name.split(' ')[0]}</h2>
         </div>
         {state.profile.picture && (
-          <img src={state.profile.picture} alt="Profile" className="w-10 h-10 rounded-full border border-white/10 shadow-lg" />
+          <img src={state.profile.picture} alt="Profile" className={`w-10 h-10 rounded-full border shadow-lg ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
         )}
       </div>
 
       {/* Primary Cockpit */}
-      <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+      <div className={`${cardBg} border rounded-[2.5rem] p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden transition-all`}>
+        <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-[100px] ${isDark ? 'bg-indigo-500/10' : 'bg-indigo-500/5'}`}></div>
         <div className="flex flex-col gap-2">
-          <span className="text-[12px] font-black text-white/30 tracking-[0.5em] uppercase">Liquidity</span>
-          <span className={`${balanceFontSize} font-black text-white tracking-tighter truncate leading-none transition-all duration-300`}>
+          <span className={`text-[12px] font-black tracking-[0.5em] uppercase ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Liquidity</span>
+          <span className={`${balanceFontSize} font-black tracking-tighter truncate leading-none transition-all duration-300 ${headingColor}`}>
             {formattedBalance}
           </span>
         </div>
-        <form onSubmit={handleNeural} className="relative flex items-center bg-black/50 rounded-2xl p-1 border border-white/5">
+        <form onSubmit={handleNeural} className={`relative flex items-center ${inputBg} rounded-2xl p-1 border transition-all duration-500 ${isProcessing ? 'border-indigo-500/50 shadow-[0_0_15px_rgba(79,70,229,0.2)]' : (isDark ? 'border-white/5' : 'border-slate-200')}`}>
           <i className={`fas fa-${isProcessing ? 'circle-notch animate-spin' : 'keyboard'} absolute left-4 text-[14px] text-indigo-500`}></i>
           <input 
-            type="text" placeholder="Neural Entry: 'Dinner 20 Bank'" 
+            type="text" placeholder={`Neural Entry: 'Dinner 20 Bank'`} 
             value={neuralInput} onChange={e => setNeuralInput(e.target.value)}
-            className="w-full bg-transparent text-white px-12 py-4 text-sm font-bold outline-none placeholder-slate-700"
+            className={`w-full bg-transparent px-12 py-4 text-sm font-bold outline-none ${isDark ? 'text-white placeholder-slate-700' : 'text-slate-900 placeholder-slate-300'}`}
           />
         </form>
       </div>
@@ -184,7 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
       {/* Account Matrix */}
       <div className="px-1">
         <div className="flex justify-between items-center mb-4 ml-1">
-          <h2 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Vault Allocation</h2>
+          <h2 className={`text-[10px] font-black uppercase tracking-[0.4em] ${subHeadingColor}`}>Vault Allocation</h2>
           <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest animate-pulse">Tap to Edit Balance</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -192,16 +201,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
             <div 
               key={acc.id} 
               onClick={() => editingAccountId !== acc.id && startEditing(acc.id, acc.balance)}
-              className={`bg-slate-900 border ${editingAccountId === acc.id ? 'border-indigo-500 shadow-indigo-500/20' : 'border-white/5'} rounded-3xl p-5 flex flex-col gap-3 shadow-lg active:scale-95 transition-all cursor-pointer`}
+              className={`${cardBg} border ${editingAccountId === acc.id ? 'border-indigo-500 shadow-indigo-500/20' : (isDark ? 'border-white/5' : 'border-slate-200')} rounded-3xl p-5 flex flex-col gap-3 shadow-lg active:scale-95 transition-all cursor-pointer`}
             >
               <div className="flex justify-between items-start">
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg ${acc.color || 'bg-white/5'} text-white shadow-lg`}>
                   {getAccountIcon(acc.id)}
                 </div>
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{acc.id}</span>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-300'}`}>{acc.id}</span>
               </div>
               <div className="mt-1">
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter mb-0.5">{acc.name}</p>
+                <p className={`text-[10px] font-bold uppercase tracking-tighter mb-0.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{acc.name}</p>
                 {editingAccountId === acc.id ? (
                   <div className="flex items-center gap-1 border-b border-indigo-500">
                     <span className="text-xl font-black text-indigo-400">{symbol}</span>
@@ -212,11 +221,11 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
                       onChange={(e) => setTempBalance(e.target.value)}
                       onBlur={saveBalance}
                       onKeyDown={(e) => e.key === 'Enter' && saveBalance()}
-                      className="w-full bg-transparent text-xl font-black text-white outline-none"
+                      className={`w-full bg-transparent text-xl font-black outline-none ${headingColor}`}
                     />
                   </div>
                 ) : (
-                  <p className="text-xl font-black text-white tracking-tighter">{symbol}{acc.balance.toLocaleString()}</p>
+                  <p className={`text-xl font-black tracking-tighter ${headingColor}`}>{symbol}{acc.balance.toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -226,14 +235,14 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
 
       {/* Primary Actions */}
       <div className="grid grid-cols-2 gap-5">
-        <button onClick={() => { setForm(f => ({ ...f, type: 'INCOME' })); setIsAdding(true); }} className="bg-indigo-600 text-white py-5 rounded-3xl text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-indigo-600/30 active:scale-95 transition-all">+ Add Fund</button>
-        <button onClick={() => { setForm(f => ({ ...f, type: 'EXPENSE' })); setIsAdding(true); }} className="bg-slate-800 text-white py-5 rounded-3xl text-[12px] font-black uppercase tracking-widest active:scale-95 transition-all">- Costing</button>
+        <button onClick={() => { setForm(f => ({ ...f, type: 'INCOME' })); setIsAdding(true); }} className="bg-indigo-600 text-white py-5 rounded-3xl text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-indigo-600/30 active:scale-95 transition-all hover:bg-indigo-500">+ Add Fund</button>
+        <button onClick={() => { setForm(f => ({ ...f, type: 'EXPENSE' })); setIsAdding(true); }} className={`${isDark ? 'bg-slate-800' : 'bg-slate-200 text-slate-700'} py-5 rounded-3xl text-[12px] font-black uppercase tracking-widest active:scale-95 transition-all`}>- Costing</button>
       </div>
 
       {/* Activity Visual */}
-      <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 h-52 shadow-inner">
+      <div className={`${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'} border rounded-[2.5rem] p-6 h-52 shadow-inner transition-all`}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">Pulse</h2>
+          <h2 className={`text-sm font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Pulse</h2>
           <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
         </div>
         <ResponsiveContainer width="100%" height="70%">
@@ -246,8 +255,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
             </defs>
             <Area type="monotone" dataKey="value" stroke="#818cf8" fillOpacity={1} fill="url(#colorVal)" strokeWidth={4} />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '16px', fontSize: '11px' }}
-              itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+              contentStyle={{ backgroundColor: isDark ? '#020617' : '#fff', border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0', borderRadius: '16px', fontSize: '11px' }}
+              itemStyle={{ color: isDark ? '#fff' : '#0f172a', fontWeight: 'bold' }}
               labelStyle={{ display: 'none' }}
             />
           </AreaChart>
@@ -255,31 +264,35 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
       </div>
 
       {/* AI Intro & Advice */}
-      <div className="bg-indigo-600/10 rounded-[2.5rem] p-6 flex gap-5 items-center border border-indigo-500/20 shadow-xl overflow-hidden relative">
+      <div className={`${isDark ? 'bg-indigo-600/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'} rounded-[2.5rem] p-6 flex gap-5 items-center border shadow-xl overflow-hidden relative`}>
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-50 pointer-events-none"></div>
         <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/40 relative z-10">
           <i className="fas fa-sparkles text-white text-lg animate-shimmer-sparkle"></i>
         </div>
         <div className="flex-1 relative z-10">
-          <p className="text-[12px] text-indigo-100/90 leading-relaxed font-semibold italic">"{advice}"</p>
+          <p className={`text-[12px] leading-relaxed font-semibold italic ${isDark ? 'text-indigo-100/90' : 'text-indigo-800'}`}>"{advice}"</p>
         </div>
       </div>
 
       {/* AI ORACLE: ASK AI Section */}
-      <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-6 space-y-4 shadow-xl">
-        <div className="px-2">
-          <h2 className="text-sm font-black text-white uppercase tracking-[0.3em]">AI Oracle</h2>
-          <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1">Direct Neural Inquiry</p>
+      <div className={`${cardBg} border rounded-[2.5rem] p-6 space-y-4 shadow-xl relative overflow-hidden transition-all`}>
+        <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] ${isDark ? 'bg-indigo-500/5' : 'bg-indigo-500/10'}`}></div>
+        <div className="px-2 flex justify-between items-center relative z-10">
+          <div>
+            <h2 className={`text-sm font-black uppercase tracking-[0.3em] ${headingColor}`}>{aiNickname}</h2>
+            <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${subHeadingColor}`}>Direct Neural Inquiry</p>
+          </div>
+          <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.8)]"></div>
         </div>
         
-        <form onSubmit={handleOracle} className="relative flex items-center bg-black/40 rounded-2xl p-1 border border-white/10">
+        <form onSubmit={handleOracle} className={`relative flex items-center ${inputBg} rounded-2xl p-1 border transition-all duration-300 ${isOracleThinking ? 'border-indigo-500/50' : (isDark ? 'border-white/10' : 'border-slate-200')}`}>
           <i className={`fas fa-${isOracleThinking ? 'spinner animate-spin' : 'comment-dots'} absolute left-4 text-[14px] text-indigo-400`}></i>
           <input 
             type="text" 
-            placeholder="Ask about saving, investing..." 
+            placeholder={`Query ${aiNickname}...`} 
             value={oracleQuery} 
             onChange={e => setOracleQuery(e.target.value)}
-            className="w-full bg-transparent text-white px-12 py-4 text-xs font-bold outline-none placeholder-slate-700"
+            className={`w-full bg-transparent px-12 py-4 text-xs font-bold outline-none ${isDark ? 'text-white placeholder-slate-700' : 'text-slate-900 placeholder-slate-300'}`}
             disabled={isOracleThinking}
           />
           <button type="submit" disabled={isOracleThinking} className="p-3 mr-1 bg-indigo-600/20 rounded-xl hover:bg-indigo-600/40 transition-colors">
@@ -288,10 +301,10 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
         </form>
 
         {oracleAnswer && (
-          <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-2xl p-5 animate-in slide-in-from-top-2 duration-300">
+          <div className={`${isDark ? 'bg-indigo-900/20 border-indigo-500/20' : 'bg-indigo-50 border-indigo-200'} border rounded-2xl p-5 animate-in slide-in-from-top-2 duration-300`}>
              <div className="flex items-start gap-3">
                <i className="fas fa-robot text-indigo-500 text-sm mt-1 shrink-0"></i>
-               <p className="text-[11px] text-white/80 leading-relaxed font-medium">{oracleAnswer}</p>
+               <p className={`text-[11px] leading-relaxed font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{oracleAnswer}</p>
              </div>
              <button onClick={() => setOracleAnswer(null)} className="mt-3 text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors">Dismiss</button>
           </div>
@@ -301,13 +314,13 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
       {/* Unified Entry System with Prescheduling */}
       {isAdding && (
         <div className="fixed inset-0 bg-black/98 z-[200] flex items-center justify-center p-6 backdrop-blur-xl transition-all duration-300">
-          <div className="bg-slate-900 border border-white/10 rounded-[3.5rem] w-full max-w-[360px] p-10 space-y-6 shadow-[0_0_80px_rgba(79,70,229,0.2)] animate-in fade-in zoom-in-95 duration-200">
+          <div className={`${isDark ? 'bg-slate-900' : 'bg-white'} border border-white/10 rounded-[3.5rem] w-full max-w-[360px] p-10 space-y-6 shadow-[0_0_80px_rgba(79,70,229,0.2)] animate-in fade-in zoom-in-95 duration-200`}>
             <div className="flex justify-between items-center">
                <div className="flex flex-col">
-                 <span className="text-[12px] font-black text-white/40 uppercase tracking-[0.4em]">{form.type}</span>
+                 <span className={`text-[12px] font-black uppercase tracking-[0.4em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{form.type}</span>
                  <span className="text-[8px] font-black text-indigo-500 uppercase tracking-widest mt-1">Manual Authorization</span>
                </div>
-               <button onClick={() => { setIsAdding(false); setIsPrescheduling(false); }} className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-white/30 hover:bg-white/10 transition-colors"><i className="fas fa-times"></i></button>
+               <button onClick={() => { setIsAdding(false); setIsPrescheduling(false); }} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 text-white/30 hover:bg-white/10' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}><i className="fas fa-times"></i></button>
             </div>
 
             <div className="space-y-4">
@@ -315,15 +328,15 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
                 type="number" required autoFocus 
                 value={form.amount || ''} 
                 onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) })} 
-                className="w-full bg-black/40 rounded-[2rem] p-8 text-5xl font-black text-white outline-none border border-white/10 text-center shadow-inner" 
+                className={`w-full ${isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-slate-100 border-slate-200 text-slate-900'} rounded-[2rem] p-8 text-5xl font-black outline-none border text-center shadow-inner`} 
                 placeholder="0" 
               />
 
-              <div className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/5">
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Preschedule flow</span>
+              <div className={`flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Preschedule flow</span>
                 <button 
                   onClick={() => setIsPrescheduling(!isPrescheduling)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${isPrescheduling ? 'bg-indigo-600' : 'bg-slate-700'}`}
+                  className={`w-12 h-6 rounded-full transition-all relative ${isPrescheduling ? 'bg-indigo-600' : (isDark ? 'bg-slate-700' : 'bg-slate-300')}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isPrescheduling ? 'left-7' : 'left-1'}`}></div>
                 </button>
@@ -333,11 +346,11 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
                 <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-widest ml-1">Frequency</label>
+                      <label className={`text-[8px] font-black uppercase tracking-widest ml-1 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Frequency</label>
                       <select 
                         value={form.frequency}
                         onChange={e => setForm({...form, frequency: e.target.value as Frequency})}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[10px] font-black text-white outline-none"
+                        className={`w-full ${isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-slate-100 border-slate-200 text-slate-900'} border rounded-xl p-3 text-[10px] font-black outline-none`}
                       >
                         <option value="DAILY">DAILY</option>
                         <option value="WEEKLY">WEEKLY</option>
@@ -346,12 +359,12 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-widest ml-1">Start Date</label>
+                      <label className={`text-[8px] font-black uppercase tracking-widest ml-1 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Start Date</label>
                       <input 
                         type="date"
                         value={form.date}
                         onChange={e => setForm({...form, date: e.target.value})}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[10px] font-black text-white outline-none"
+                        className={`w-full ${isDark ? 'bg-black/40 border-white/10 text-white' : 'bg-slate-100 border-slate-200 text-slate-900'} border rounded-xl p-3 text-[10px] font-black outline-none`}
                       />
                     </div>
                   </div>
@@ -363,7 +376,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
                    <button 
                     key={a.id} type="button" 
                     onClick={() => setForm({...form, accountId: a.id})} 
-                    className={`py-3 rounded-xl text-[9px] font-black border transition-all ${form.accountId === a.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-black border-white/5 text-white/30'}`}
+                    className={`py-3 rounded-xl text-[9px] font-black border transition-all ${form.accountId === a.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' : (isDark ? 'bg-black border-white/5 text-white/30' : 'bg-slate-100 border-slate-200 text-slate-400')}`}
                    >
                     {a.name}
                    </button>

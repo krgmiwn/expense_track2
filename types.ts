@@ -2,6 +2,7 @@
 export type TransactionType = 'INCOME' | 'EXPENSE';
 export type Frequency = 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
 export type AccountType = 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | 'CARD';
+export type ThemeType = 'dark' | 'light';
 
 export interface Account {
   id: AccountType;
@@ -39,6 +40,8 @@ export interface UserProfile {
   currency: string;
   picture?: string;
   isAuthenticated?: boolean;
+  chatbotNickname?: string;
+  theme?: ThemeType;
 }
 
 export interface AppState {

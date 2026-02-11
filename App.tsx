@@ -24,7 +24,8 @@ const INITIAL_STATE: AppState = {
     name: 'User',
     email: '',
     currency: 'BDT',
-    isAuthenticated: false
+    isAuthenticated: false,
+    theme: 'dark'
   }
 };
 
@@ -34,6 +35,9 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_STATE;
   });
   const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'scheduled' | 'settings'>('dashboard');
+
+  const theme = state.profile.theme || 'dark';
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     localStorage.setItem('track_nano_v1', JSON.stringify(state));
@@ -68,16 +72,16 @@ const App: React.FC = () => {
   }, []);
 
   if (!state.profile.isAuthenticated) {
-    return <Login onLogin={(u) => setState(p => ({ ...p, profile: { ...u, isAuthenticated: true } }))} />;
+    return <Login onLogin={(u) => setState(p => ({ ...p, profile: { ...u, theme: 'dark', isAuthenticated: true } }))} />;
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
+    <div className={`flex flex-col h-screen transition-colors duration-500 overflow-hidden ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
       <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24">
         <div className="max-w-md mx-auto space-y-4">
           <header className="flex justify-between items-center px-1 h-12">
-            <span className="text-xl font-black text-indigo-500 tracking-tighter uppercase">{activeTab}</span>
-            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+            <span className={`text-xl font-black tracking-tighter uppercase ${isDark ? 'text-indigo-500' : 'text-indigo-600'}`}>{activeTab}</span>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-700' : 'text-slate-400'}`}>{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
           </header>
           
           {activeTab === 'dashboard' && (
@@ -89,8 +93,8 @@ const App: React.FC = () => {
               onUpdateAccountBalance={updateAccountBalance}
             />
           )}
-          {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} />}
-          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={addScheduledTransaction} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} />}
+          {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} theme={theme} />}
+          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={addScheduledTransaction} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} theme={theme} />}
           {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={() => setState(INITIAL_STATE)} />}
         </div>
       </main>
