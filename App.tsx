@@ -52,6 +52,21 @@ const App: React.FC = () => {
     });
   }, []);
 
+  const addScheduledTransaction = useCallback((stx: Omit<ScheduledTransaction, 'id'>) => {
+    const newStx = { ...stx, id: Math.random().toString(36).substr(2, 5) };
+    setState(prev => ({
+      ...prev,
+      scheduled: [newStx, ...prev.scheduled]
+    }));
+  }, []);
+
+  const updateAccountBalance = useCallback((accountId: AccountType, newBalance: number) => {
+    setState(prev => ({
+      ...prev,
+      accounts: prev.accounts.map(acc => acc.id === accountId ? { ...acc, balance: newBalance } : acc)
+    }));
+  }, []);
+
   if (!state.profile.isAuthenticated) {
     return <Login onLogin={(u) => setState(p => ({ ...p, profile: { ...u, isAuthenticated: true } }))} />;
   }
@@ -65,9 +80,17 @@ const App: React.FC = () => {
             <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
           </header>
           
-          {activeTab === 'dashboard' && <Dashboard state={state} onAdd={addTransaction} onAddScheduled={() => {}} onNavigateToScheduled={() => setActiveTab('scheduled')} />}
+          {activeTab === 'dashboard' && (
+            <Dashboard 
+              state={state} 
+              onAdd={addTransaction} 
+              onAddScheduled={addScheduledTransaction} 
+              onNavigateToScheduled={() => setActiveTab('scheduled')} 
+              onUpdateAccountBalance={updateAccountBalance}
+            />
+          )}
           {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} />}
-          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={(stx) => setState(p => ({...p, scheduled: [...p.scheduled, {...stx, id: Math.random().toString(36).substr(2,5)}]}))} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} />}
+          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={addScheduledTransaction} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} />}
           {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={() => setState(INITIAL_STATE)} />}
         </div>
       </main>
