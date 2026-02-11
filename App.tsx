@@ -226,8 +226,8 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <header className="mb-6 flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight">{activeTab.toUpperCase()}</h1>
-              <p className="text-slate-400 text-xs font-bold">{state.profile.name.split(' ')[0]}'s FinTrack</p>
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">{activeTab}</h1>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{state.profile.name.split(' ')[0]}'s MY TRACK PRO</p>
             </div>
             <div className="text-right">
               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{new Date().toLocaleDateString(undefined, { weekday: 'short' })}</p>

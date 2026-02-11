@@ -31,11 +31,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, profile }) =
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-72 liquid-glass m-6 rounded-[3rem] flex-col p-6 shadow-2xl">
-        <div className="px-4 py-8 text-indigo-600 font-black text-2xl flex items-center gap-4">
+        <div className="px-4 py-8 text-indigo-600 font-black text-xl flex items-center gap-4">
           <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-indigo-200 transform -rotate-6">
             <ICONS.Wallet />
           </div>
-          <span className="tracking-tighter text-slate-800">FIN<span className="text-indigo-600">TRACK</span></span>
+          <span className="tracking-tighter text-slate-800 uppercase">MY<span className="text-indigo-600">TRACK PRO</span></span>
         </div>
         
         <nav className="flex-1 px-2 py-8 space-y-4">

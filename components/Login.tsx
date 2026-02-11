@@ -54,7 +54,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             window.google.accounts.id.renderButton(
               btnParent,
               { 
-                theme: "outline", // Changed from 'filled_blue' to 'outline' for a full white look
+                theme: "outline", 
                 size: "medium", 
                 width: 320, 
                 shape: "pill",
@@ -93,69 +93,62 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Liquid Crystal Background Orbs */}
-      <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-indigo-600/30 rounded-full blur-[160px] animate-pulse"></div>
-      <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-indigo-500/20 rounded-full blur-[160px] animate-pulse duration-[10s]"></div>
+      <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] bg-indigo-600/20 rounded-full blur-[160px] animate-pulse"></div>
+      <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-indigo-500/10 rounded-full blur-[160px] animate-pulse duration-[10s]"></div>
 
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-3xl rounded-[4rem] p-10 shadow-[0_48px_128px_-16px_rgba(0,0,0,0.6)] border border-white/20 relative z-10 animate-in zoom-in-95 duration-700">
-        <div className="text-center mb-10">
-          <div className="w-24 h-24 bg-indigo-600 rounded-[2.5rem] mx-auto flex items-center justify-center text-white text-4xl mb-6 shadow-2xl shadow-indigo-500/50 transform -rotate-6">
+      <div className="max-w-md w-full bg-white/5 backdrop-blur-3xl rounded-[5rem] p-12 shadow-[0_64px_128px_-16px_rgba(0,0,0,0.8)] border border-white/10 relative z-10 animate-in zoom-in-95 duration-700">
+        <div className="text-center mb-12">
+          <div className="w-28 h-28 bg-indigo-600 rounded-[3rem] mx-auto flex items-center justify-center text-white text-5xl mb-8 shadow-2xl shadow-indigo-600/50 transform -rotate-6 transition-transform hover:rotate-0 cursor-pointer">
             <i className="fas fa-wallet"></i>
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tighter mb-2">FinTrack Pro</h1>
-          <p className="text-indigo-200/40 font-black uppercase tracking-[0.4em] text-[10px]">Liquid Crystal Intelligence</p>
+          <h1 className="text-5xl font-black text-white tracking-tighter mb-2 uppercase">MY TRACK PRO</h1>
+          <p className="text-indigo-400/60 font-black uppercase tracking-[0.5em] text-[10px]">Liquid Crystal Intelligence</p>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-black/20 backdrop-blur-2xl p-8 rounded-[3.5rem] border border-white/5 shadow-inner flex flex-col items-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-8 text-center">Identity Portal</h2>
+        <div className="space-y-8">
+          <div className="bg-black/30 backdrop-blur-2xl p-10 rounded-[4rem] border border-white/5 shadow-inner flex flex-col items-center">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-10 text-center">Auth Gateway</h2>
             
-            {/* Unified Solid Blue Button Design */}
             <button 
               onClick={handleGuestLogin}
-              className="w-full py-5 px-8 bg-indigo-600 text-white rounded-[2rem] font-black text-lg hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-4 active:scale-95 mb-6"
+              className="w-full py-6 px-8 bg-indigo-600 text-white rounded-[2.2rem] font-black text-lg hover:bg-indigo-500 transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-4 active:scale-95 mb-8"
             >
               <i className="fas fa-bolt"></i> Quick Entry
             </button>
 
-            <div className="w-full flex items-center gap-6 mb-6">
-              <div className="h-[1px] flex-1 bg-white/10"></div>
-              <span className="text-[9px] font-black uppercase text-white/20 tracking-[0.3em]">Cloud Sync</span>
-              <div className="h-[1px] flex-1 bg-white/10"></div>
+            <div className="w-full flex items-center gap-6 mb-8">
+              <div className="h-[1px] flex-1 bg-white/5"></div>
+              <span className="text-[8px] font-black uppercase text-white/10 tracking-[0.4em]">Cloud Sync</span>
+              <div className="h-[1px] flex-1 bg-white/5"></div>
             </div>
 
-            {/* Google Button Container - White Background and Theme set to Outline */}
-            <div className="w-full flex justify-center py-1 px-1 rounded-[2.5rem] bg-white shadow-xl relative group overflow-hidden transition-transform active:scale-95">
-               <div id="googleBtn" className="relative z-10 w-full flex justify-center min-h-[32px]"></div>
+            {/* Premium Full White Google Button Wrapper */}
+            <div className="w-full flex justify-center py-1 px-1 rounded-[2.5rem] bg-white shadow-[0_12px_40px_-12px_rgba(255,255,255,0.3)] relative group overflow-hidden transition-transform active:scale-95">
+               <div id="googleBtn" className="relative z-10 w-full flex justify-center min-h-[36px]"></div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6 text-center">
+          <div className="grid grid-cols-3 gap-8 text-center px-4">
             <div>
-              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
-                <i className="fas fa-lock text-sm"></i>
-              </div>
-              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Secure</p>
+              <i className="fas fa-shield-halved text-white/20 text-xl mb-3"></i>
+              <p className="text-[8px] font-black text-white/10 uppercase tracking-widest">Encrypted</p>
             </div>
             <div>
-              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
-                <i className="fas fa-brain text-sm"></i>
-              </div>
-              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Neural</p>
+              <i className="fas fa-microchip text-white/20 text-xl mb-3"></i>
+              <p className="text-[8px] font-black text-white/10 uppercase tracking-widest">Neural</p>
             </div>
             <div>
-              <div className="w-12 h-12 bg-white/5 text-white/40 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/5">
-                <i className="fas fa-sync text-sm"></i>
-              </div>
-              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Live</p>
+              <i className="fas fa-infinity text-white/20 text-xl mb-3"></i>
+              <p className="text-[8px] font-black text-white/10 uppercase tracking-widest">Stateless</p>
             </div>
           </div>
         </div>
 
-        <p className="mt-12 text-center text-[9px] text-white/10 font-black uppercase tracking-[0.4em] leading-loose">
-          Secure Encrypted Transaction Layer <br/>
-          <span className="text-indigo-400/40 hover:text-indigo-300 transition-colors cursor-pointer">Privacy Protocol v3.5</span>
+        <p className="mt-14 text-center text-[9px] text-white/10 font-black uppercase tracking-[0.4em] leading-loose">
+          Enterprise Financial Intelligence <br/>
+          <span className="text-indigo-400/40 hover:text-indigo-300 transition-colors cursor-pointer">System Manifest v3.8</span>
         </p>
       </div>
     </div>
