@@ -1,10 +1,13 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, AppState } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
 export const getFinancialAdvice = async (state: AppState): Promise<string> => {
+  // Check if API key exists to avoid crashing the app during initialization
+  if (!process.env.API_KEY) {
+    console.warn("API_KEY is missing. Please set it in your Vercel Environment Variables.");
+    return "Please set your Gemini API Key in the settings to get personalized financial advice.";
+  }
+
   try {
     const { transactions, profile } = state;
     const recentData = transactions.slice(-10).map(t => `${t.type}: ${t.amount} ${profile.currency} (${t.category})`).join(', ');
@@ -15,6 +18,7 @@ export const getFinancialAdvice = async (state: AppState): Promise<string> => {
       Current currency: ${profile.currency}.
     `;
 
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
@@ -27,6 +31,6 @@ export const getFinancialAdvice = async (state: AppState): Promise<string> => {
     return response.text || "I couldn't analyze your data right now. Keep tracking your expenses!";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Financial advisor is currently offline. Please try again later.";
+    return "Financial advisor is currently offline. Check your API key or try again later.";
   }
 };
