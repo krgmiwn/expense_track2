@@ -39,7 +39,15 @@ const App: React.FC = () => {
     if (lastSessionEmail) {
       const savedData = localStorage.getItem(`${DATA_PREFIX}${lastSessionEmail}`);
       if (savedData) {
-        return JSON.parse(savedData);
+        const parsed = JSON.parse(savedData);
+        // FORCE authentication true if we have a valid session and data
+        return {
+          ...parsed,
+          profile: {
+            ...parsed.profile,
+            isAuthenticated: true
+          }
+        };
       }
     }
     return EMPTY_STATE;
@@ -54,6 +62,7 @@ const App: React.FC = () => {
     const userKey = `${DATA_PREFIX}${user.email}`;
     const savedData = localStorage.getItem(userKey);
     
+    // Crucial: Store the email to maintain the session
     localStorage.setItem(SESSION_KEY, user.email);
     
     if (savedData) {

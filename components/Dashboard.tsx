@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AppState, Transaction, ScheduledTransaction, CURRENCIES, AccountType, Frequency } from '../types';
-import { getFinancialAdvice, parseNeuralCommand, askAI } from '../services/geminiService';
+import { getFinancialAdvice, parseNeuralCommand, askAI, checkNeuralStatus } from '../services/geminiService';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardProps {
@@ -17,6 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
   const [isAdding, setIsAdding] = useState(false);
   const [neuralInput, setNeuralInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [neuralStatus, setNeuralStatus] = useState<'stable' | 'busy'>('stable');
   
   const isDark = state.profile.theme === 'dark';
   
@@ -44,6 +45,18 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
   });
 
   const aiNickname = state.profile.chatbotNickname || "Oracle";
+
+  // Polling for Neural Server Load
+  useEffect(() => {
+    const updateStatus = async () => {
+      const status = await checkNeuralStatus();
+      setNeuralStatus(status);
+    };
+
+    updateStatus(); // Initial check
+    const interval = setInterval(updateStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetch = async () => setAdvice(await getFinancialAdvice(state));
@@ -278,9 +291,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onU
       <div className={`${cardBg} border rounded-[2.5rem] p-6 space-y-4 shadow-xl relative overflow-hidden transition-all`}>
         <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] ${isDark ? 'bg-indigo-500/5' : 'bg-indigo-500/10'}`}></div>
         <div className="px-2 flex justify-between items-center relative z-10">
-          <div>
-            <h2 className={`text-sm font-black uppercase tracking-[0.3em] ${headingColor}`}>{aiNickname}</h2>
-            <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${subHeadingColor}`}>Direct Neural Inquiry</p>
+          <div className="flex items-center gap-2">
+            <div>
+              <h2 className={`text-sm font-black uppercase tracking-[0.3em] ${headingColor}`}>{aiNickname}</h2>
+              <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${subHeadingColor}`}>Direct Neural Inquiry</p>
+            </div>
+            {/* Server Load Indicator Dot */}
+            <div 
+              className={`w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-colors duration-500 ${neuralStatus === 'stable' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-rose-500 shadow-rose-500/50'}`}
+              title={neuralStatus === 'stable' ? 'Neural Link Stable' : 'Neural Link Busy'}
+            ></div>
           </div>
           <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.8)]"></div>
         </div>

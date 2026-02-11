@@ -22,6 +22,21 @@ async function callAIWithRetry(fn: () => Promise<any>, retries = 4, delay = 1500
   }
 }
 
+export const checkNeuralStatus = async (): Promise<'stable' | 'busy'> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Use a tiny prompt to check connectivity and responsiveness
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: 'ping',
+      config: { maxOutputTokens: 1 }
+    });
+    return response.text ? 'stable' : 'busy';
+  } catch (error: any) {
+    return 'busy';
+  }
+};
+
 export const getFinancialAdvice = async (state: AppState): Promise<string> => {
   return callAIWithRetry(async () => {
     const { transactions, profile, accounts } = state;
