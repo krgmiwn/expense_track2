@@ -34,6 +34,17 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
 
   const symbol = CURRENCIES.find(c => c.code === state.profile.currency)?.symbol || '$';
   const balance = useMemo(() => state.accounts.reduce((s, a) => s + a.balance, 0), [state.accounts]);
+  const formattedBalance = useMemo(() => `${symbol}${balance.toLocaleString()}`, [symbol, balance]);
+
+  // Dynamic font size logic based on character length
+  const balanceFontSize = useMemo(() => {
+    const len = formattedBalance.length;
+    if (len <= 7) return 'text-5xl';
+    if (len <= 10) return 'text-4xl';
+    if (len <= 13) return 'text-3xl';
+    if (len <= 16) return 'text-2xl';
+    return 'text-xl';
+  }, [formattedBalance]);
 
   const graphData = useMemo(() => {
     const days = 7;
@@ -79,9 +90,11 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
       {/* Primary Cockpit */}
       <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[100px]"></div>
-        <div className="flex justify-between items-baseline">
+        <div className="flex flex-col gap-2">
           <span className="text-[12px] font-black text-white/30 tracking-[0.5em] uppercase">Liquidity</span>
-          <span className="text-5xl font-black text-white tracking-tighter">{symbol}{balance.toLocaleString()}</span>
+          <span className={`${balanceFontSize} font-black text-white tracking-tighter truncate leading-none transition-all duration-300`}>
+            {formattedBalance}
+          </span>
         </div>
         <form onSubmit={handleNeural} className="relative flex items-center bg-black/50 rounded-2xl p-1 border border-white/5">
           <i className={`fas fa-${isProcessing ? 'circle-notch animate-spin' : 'keyboard'} absolute left-4 text-[14px] text-indigo-500`}></i>
