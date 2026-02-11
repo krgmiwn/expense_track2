@@ -58,16 +58,16 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
-      <main className="flex-1 overflow-y-auto no-scrollbar p-2 pb-16">
-        <div className="max-w-md mx-auto space-y-2">
-          <header className="flex justify-between items-center px-1 h-6">
-            <span className="text-[10px] font-black text-indigo-500 tracking-tighter uppercase">{activeTab}</span>
-            <span className="text-[8px] font-bold text-slate-700">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+      <main className="flex-1 overflow-y-auto no-scrollbar p-3 pb-20">
+        <div className="max-w-md mx-auto space-y-3">
+          <header className="flex justify-between items-center px-1 h-8">
+            <span className="text-[12px] font-black text-indigo-500 tracking-tighter uppercase">{activeTab}</span>
+            <span className="text-[9px] font-bold text-slate-700">{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
           </header>
           
           {activeTab === 'dashboard' && <Dashboard state={state} onAdd={addTransaction} onAddScheduled={() => {}} onNavigateToScheduled={() => setActiveTab('scheduled')} />}
           {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} />}
-          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={() => {}} onDelete={() => {}} currency={state.profile.currency} />}
+          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={(stx) => setState(p => ({...p, scheduled: [...p.scheduled, {...stx, id: Math.random().toString(36).substr(2,5)}]}))} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} />}
           {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={() => setState(INITIAL_STATE)} />}
         </div>
       </main>
