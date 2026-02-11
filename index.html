@@ -10,8 +10,9 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2654/2654290.png">
     
-    <!-- CRITICAL: Fix for "process is not defined" error in browsers. 
-         Must be defined before the module script loads. -->
+    <!-- Google Sign-In Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <script>
         window.process = { 
             env: { 
@@ -46,6 +47,14 @@
         #root:empty {
             background-color: #f8fafc;
         }
+        /* Custom scrollbar hide for horizontal accounts */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 <script type="importmap">
 {
@@ -63,7 +72,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Vite will handle the transpilation of index.tsx -->
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

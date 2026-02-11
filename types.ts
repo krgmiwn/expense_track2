@@ -1,12 +1,22 @@
 
 export type TransactionType = 'INCOME' | 'EXPENSE';
 export type Frequency = 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+export type AccountType = 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | 'CARD';
+
+export interface Account {
+  id: AccountType;
+  name: string;
+  balance: number;
+  icon: string;
+  color: string;
+}
 
 export interface Transaction {
   id: string;
   amount: number;
   category: string;
   type: TransactionType;
+  accountId: AccountType;
   date: string;
   note: string;
 }
@@ -16,6 +26,7 @@ export interface ScheduledTransaction {
   amount: number;
   category: string;
   type: TransactionType;
+  accountId: AccountType;
   frequency: Frequency;
   startDate: string;
   lastProcessed?: string;
@@ -26,12 +37,15 @@ export interface UserProfile {
   name: string;
   email: string;
   currency: string;
+  picture?: string;
+  isAuthenticated?: boolean;
 }
 
 export interface AppState {
   transactions: Transaction[];
   scheduled: ScheduledTransaction[];
   profile: UserProfile;
+  accounts: Account[];
 }
 
 export const CURRENCIES = [

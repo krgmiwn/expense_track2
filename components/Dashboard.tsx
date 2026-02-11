@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppState, Transaction, CURRENCIES, CATEGORIES } from '../types';
+import { AppState, Transaction, ScheduledTransaction, CURRENCIES, CATEGORIES, AccountType, Frequency } from '../types';
 import { ICONS } from '../constants';
 import { getFinancialAdvice } from '../services/geminiService';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -8,17 +8,23 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface DashboardProps {
   state: AppState;
   onAdd: (tx: Omit<Transaction, 'id'>) => void;
+  onAddScheduled: (stx: Omit<ScheduledTransaction, 'id'>) => void;
   onNavigateToScheduled: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToScheduled }) => {
+const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onAddScheduled, onNavigateToScheduled }) => {
   const [advice, setAdvice] = useState<string>('Analyzing your daily financial patterns...');
   const [isAdding, setIsAdding] = useState(false);
-  const [form, setForm] = useState<Omit<Transaction, 'id'>>({
+  const [isRecurring, setIsRecurring] = useState(false);
+  
+  const [form, setForm] = useState({
     amount: 0,
     category: 'Other',
-    type: 'EXPENSE',
+    type: 'EXPENSE' as 'INCOME' | 'EXPENSE',
+    accountId: 'BANK' as AccountType,
     date: new Date().toISOString(),
+    frequency: 'MONTHLY' as Frequency,
+    startDate: new Date().toISOString().split('T')[0],
     note: ''
   });
 
@@ -28,33 +34,30 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
       setAdvice(result);
     };
     fetchAdvice();
-  }, [state.transactions.length]); // Only refetch if count changes
+  }, [state.transactions.length]);
 
   const currencySymbol = CURRENCIES.find(c => c.code === state.profile.currency)?.symbol || '$';
 
-  const { balance, todayIncome, todayExpenses, totalIncome, totalExpenses } = useMemo(() => {
+  const { balance, todayIncome, todayExpenses } = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    let inc = 0, exp = 0, tInc = 0, tExp = 0;
+    let tInc = 0, tExp = 0;
     
     state.transactions.forEach(t => {
       const isToday = t.date.split('T')[0] === today;
-      if (t.type === 'INCOME') {
-        inc += t.amount;
-        if (isToday) tInc += t.amount;
-      } else {
-        exp += t.amount;
-        if (isToday) tExp += t.amount;
+      if (isToday) {
+        if (t.type === 'INCOME') tInc += t.amount;
+        else tExp += t.amount;
       }
     });
 
+    const totalBalance = state.accounts.reduce((sum, acc) => sum + acc.balance, 0);
+
     return {
-      totalIncome: inc,
-      totalExpenses: exp,
-      balance: inc - exp,
+      balance: totalBalance,
       todayIncome: tInc,
       todayExpenses: tExp
     };
-  }, [state.transactions]);
+  }, [state.transactions, state.accounts]);
 
   const dailyHistoryData = useMemo(() => {
     const last7Days = [...Array(7)].map((_, i) => {
@@ -78,18 +81,53 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form.amount <= 0) return;
-    onAdd(form);
+
+    if (isRecurring) {
+      onAddScheduled({
+        amount: form.amount,
+        category: form.category,
+        type: form.type,
+        accountId: form.accountId,
+        frequency: form.frequency,
+        startDate: form.startDate,
+        note: form.note
+      });
+    } else {
+      onAdd({
+        amount: form.amount,
+        category: form.category,
+        type: form.type,
+        accountId: form.accountId,
+        date: form.date,
+        note: form.note
+      });
+    }
+    
     setIsAdding(false);
-    setForm({ amount: 0, category: 'Other', type: 'EXPENSE', date: new Date().toISOString(), note: '' });
+    setIsRecurring(false);
+    resetForm();
   };
 
-  const openAddFund = () => {
-    setForm({ ...form, type: 'INCOME', category: 'Salary' });
-    setIsAdding(true);
+  const resetForm = () => {
+    setForm({ 
+      amount: 0, 
+      category: 'Other', 
+      type: 'EXPENSE', 
+      accountId: 'BANK', 
+      date: new Date().toISOString(), 
+      frequency: 'MONTHLY',
+      startDate: new Date().toISOString().split('T')[0],
+      note: '' 
+    });
   };
 
-  const openReduceFund = () => {
-    setForm({ ...form, type: 'EXPENSE', category: 'Food' });
+  const openAction = (type: 'INCOME' | 'EXPENSE', recurring: boolean = false) => {
+    setForm(prev => ({ 
+      ...prev, 
+      type, 
+      category: type === 'INCOME' ? 'Salary' : 'Food' 
+    }));
+    setIsRecurring(recurring);
     setIsAdding(true);
   };
 
@@ -100,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="opacity-70 text-[10px] font-black uppercase tracking-[0.2em]">Net Capital Balance</p>
+              <p className="opacity-70 text-[10px] font-black uppercase tracking-[0.2em]">Total Capital Balance</p>
               <h2 className="text-5xl font-black mb-8 tracking-tighter">
                 <span className="text-indigo-300 mr-1">{currencySymbol}</span>
                 {balance.toLocaleString()}
@@ -111,18 +149,33 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <button 
-              onClick={openAddFund}
+              onClick={() => openAction('INCOME')}
               className="bg-white text-indigo-700 hover:bg-indigo-50 px-6 py-4 rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95"
             >
               <i className="fas fa-plus-circle text-lg"></i> Fund Add
             </button>
             <button 
-              onClick={openReduceFund}
+              onClick={() => openAction('EXPENSE')}
               className="bg-indigo-500/30 hover:bg-indigo-500/40 text-white px-6 py-4 rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-2 border border-white/10 active:scale-95"
             >
               <i className="fas fa-minus-circle text-lg"></i> Fund Reduce
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <button 
+              onClick={() => openAction('INCOME', true)}
+              className="bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-100 px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 border border-emerald-400/20 active:scale-95"
+            >
+              <i className="fas fa-calendar-plus text-sm"></i> Preschedule Add
+            </button>
+            <button 
+              onClick={() => openAction('EXPENSE', true)}
+              className="bg-rose-500/20 hover:bg-rose-500/40 text-rose-100 px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 border border-rose-400/20 active:scale-95"
+            >
+              <i className="fas fa-calendar-minus text-sm"></i> Preschedule Reduce
             </button>
           </div>
 
@@ -134,9 +187,29 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
           </button>
         </div>
         
-        {/* Decorative background element */}
         <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-indigo-400/20 rounded-full blur-2xl"></div>
+      </div>
+
+      {/* Capital Sources Section */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Capital Sources</h3>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide no-scrollbar -mx-4 px-4">
+          {state.accounts.map((acc) => (
+            <div 
+              key={acc.id} 
+              className="flex-shrink-0 w-40 bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center text-center transition-transform active:scale-95"
+            >
+              <div className={`w-12 h-12 ${acc.color} text-white rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-${acc.color.split('-')[1]}-100`}>
+                <i className={`fas fa-${acc.icon} text-xl`}></i>
+              </div>
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">{acc.name}</p>
+              <p className="font-bold text-slate-800">{currencySymbol}{acc.balance.toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,7 +219,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
             <p className="text-xs font-black uppercase tracking-widest">Today's Inflow</p>
           </div>
           <h2 className="text-3xl font-black text-slate-800">{currencySymbol}{todayIncome.toLocaleString()}</h2>
-          <p className="text-[10px] text-slate-400 mt-1 font-bold">LIFETIME: {currencySymbol}{totalIncome.toLocaleString()}</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
@@ -155,7 +227,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
             <p className="text-xs font-black uppercase tracking-widest">Today's Outflow</p>
           </div>
           <h2 className="text-3xl font-black text-slate-800">{currencySymbol}{todayExpenses.toLocaleString()}</h2>
-          <p className="text-[10px] text-slate-400 mt-1 font-bold">LIFETIME: {currencySymbol}{totalExpenses.toLocaleString()}</p>
         </div>
       </div>
 
@@ -198,9 +269,14 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
       {/* Quick Action Modal */}
       {isAdding && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-200 overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-800">{form.type === 'INCOME' ? 'Add Fund' : 'Reduce Fund'}</h3>
+              <div>
+                <h3 className="text-2xl font-black text-slate-800">
+                  {isRecurring ? 'Schedule' : (form.type === 'INCOME' ? 'Add Fund' : 'Reduce Fund')}
+                </h3>
+                {isRecurring && <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">Recurring {form.type.toLowerCase()}</p>}
+              </div>
               <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600 p-2"><i className="fas fa-times text-xl"></i></button>
             </div>
             
@@ -218,8 +294,74 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
                 />
               </div>
 
+              {/* Recurring Toggle */}
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isRecurring ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                    <i className="fas fa-redo"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-700">Make Recurring</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">Automate this inflow</p>
+                  </div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setIsRecurring(!isRecurring)}
+                  className={`w-12 h-6 rounded-full transition-all relative ${isRecurring ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isRecurring ? 'left-7' : 'left-1'}`}></div>
+                </button>
+              </div>
+
+              {isRecurring && (
+                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Frequency</label>
+                    <select
+                      value={form.frequency}
+                      onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold text-slate-700"
+                    >
+                      <option value="DAILY">Daily</option>
+                      <option value="WEEKLY">Weekly</option>
+                      <option value="MONTHLY">Monthly</option>
+                      <option value="ONCE">Once</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Start Date</label>
+                    <input
+                      type="date"
+                      value={form.startDate}
+                      onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold text-slate-700"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Select Category</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Capital Source</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {state.accounts.map(acc => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, accountId: acc.id })}
+                      className={`py-3 px-2 rounded-xl text-xs font-bold border-2 transition-all flex items-center gap-3 ${
+                        form.accountId === acc.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
+                      }`}
+                    >
+                      <i className={`fas fa-${acc.icon}`}></i>
+                      {acc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(form.type === 'INCOME' ? CATEGORIES.INCOME : CATEGORIES.EXPENSE).map(cat => (
                     <button
@@ -250,7 +392,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd, onNavigateToSchedul
                   form.type === 'INCOME' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-indigo-600 shadow-indigo-100'
                 }`}
               >
-                Confirm Transaction
+                {isRecurring ? 'Confirm Schedule' : `Confirm ${form.type === 'INCOME' ? 'Inflow' : 'Outflow'}`}
               </button>
             </form>
           </div>

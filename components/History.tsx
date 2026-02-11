@@ -39,8 +39,8 @@ const History: React.FC<HistoryProps> = ({ transactions, onDelete, currency }) =
           <thead>
             <tr className="text-slate-400 text-xs uppercase tracking-widest border-b border-slate-100">
               <th className="pb-4 font-bold">Date</th>
+              <th className="pb-4 font-bold">Account</th>
               <th className="pb-4 font-bold">Category</th>
-              <th className="pb-4 font-bold">Note</th>
               <th className="pb-4 font-bold">Amount</th>
               <th className="pb-4 font-bold">Action</th>
             </tr>
@@ -49,16 +49,20 @@ const History: React.FC<HistoryProps> = ({ transactions, onDelete, currency }) =
             {filtered.length > 0 ? filtered.map((t) => (
               <tr key={t.id} className="group hover:bg-slate-50/50 transition-colors">
                 <td className="py-4 text-sm text-slate-500">
-                  {new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                 </td>
                 <td className="py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase text-slate-400">{t.accountId}</span>
+                  </div>
+                </td>
+                <td className="py-4">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
                     t.type === 'INCOME' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
                   }`}>
                     {t.category}
                   </span>
                 </td>
-                <td className="py-4 text-sm text-slate-600 max-w-xs truncate">{t.note || '-'}</td>
                 <td className={`py-4 font-bold ${t.type === 'INCOME' ? 'text-emerald-600' : 'text-slate-800'}`}>
                   {t.type === 'INCOME' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
                 </td>

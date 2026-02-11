@@ -11,4 +11,9 @@ export const ICONS = {
   Plus: () => <i className="fas fa-plus"></i>,
   Trash: () => <i className="fas fa-trash"></i>,
   Robot: () => <i className="fas fa-robot"></i>,
+  Bank: () => <i className="fas fa-university"></i>,
+  Mobile: () => <i className="fas fa-mobile-alt"></i>,
+  Nagad: () => <i className="fas fa-coins"></i>,
+  Rocket: () => <i className="fas fa-rocket"></i>,
+  Card: () => <i className="fas fa-credit-card"></i>,
 };
