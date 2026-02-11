@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { UserProfile } from '../types';
 
 declare global {
@@ -52,9 +52,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             window.google.accounts.id.renderButton(
               btnParent,
               { 
-                theme: "outline", 
-                size: "medium", 
-                width: 260, 
+                theme: "filled_blue", 
+                size: "large",
+                width: 320,
                 shape: "pill",
                 text: "continue_with",
                 logo_alignment: "left"
@@ -90,56 +90,66 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] bg-indigo-600/10 rounded-full blur-[160px] animate-pulse"></div>
-      <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-indigo-500/10 rounded-full blur-[160px] animate-pulse duration-[10s]"></div>
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+      {/* Dynamic Background Elements */}
+      <div className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[100px] animate-pulse delay-1000"></div>
+      <div className="absolute top-[30%] left-[40%] w-1 h-1 bg-white rounded-full shadow-[0_0_100px_50px_rgba(255,255,255,0.05)]"></div>
 
-      <div className="max-w-sm w-full bg-white/5 backdrop-blur-2xl rounded-[3.5rem] p-8 shadow-[0_48px_96px_-16px_rgba(0,0,0,0.8)] border border-white/10 relative z-10">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-3xl mb-6 shadow-xl shadow-indigo-600/50 transform -rotate-6">
-            <i className="fas fa-wallet"></i>
+      <div className="max-w-md w-full relative z-10">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2.2rem] bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-[0_20px_40px_-10px_rgba(79,70,229,0.5)] mb-8 transform hover:scale-105 transition-transform duration-500">
+            <i className="fas fa-layer-group text-white text-3xl"></i>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tighter mb-1 uppercase">MY TRACK PRO</h1>
-          <p className="text-indigo-400/60 font-black uppercase tracking-[0.4em] text-[8px]">Intelligence Layer</p>
+          <h1 className="text-5xl font-black text-white tracking-tighter mb-3">
+            MyTrack <span className="text-indigo-500">Pro</span>
+          </h1>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.4em]">Financial Sovereignty</p>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-black/30 backdrop-blur-xl p-6 rounded-[3rem] border border-white/5 flex flex-col items-center">
-            <h2 className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20 mb-6">Gateway</h2>
+        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl space-y-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-white text-lg font-black tracking-tight">Welcome Back</h2>
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Identify to continue</p>
+          </div>
+
+          <div className="space-y-4">
+            <div id="googleBtn" className="flex justify-center transition-opacity hover:opacity-90 active:scale-[0.98]"></div>
             
+            <div className="flex items-center gap-4 py-2">
+              <div className="h-px flex-1 bg-white/5"></div>
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Or</span>
+              <div className="h-px flex-1 bg-white/5"></div>
+            </div>
+
             <button 
               onClick={handleGuestLogin}
-              className="w-full py-4 px-6 bg-indigo-600 text-white rounded-[1.5rem] font-black text-base hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/20 mb-6 active:scale-95"
+              className="w-full py-4.5 px-8 bg-white/5 hover:bg-white/10 text-white rounded-full font-black text-sm transition-all border border-white/5 active:scale-95 flex items-center justify-center gap-2 group"
             >
-              <i className="fas fa-bolt mr-2"></i> Quick Entry
+              <i className="fas fa-user-secret text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
+              Continue as Guest
             </button>
-
-            <div className="w-full flex items-center gap-4 mb-6">
-              <div className="h-[1px] flex-1 bg-white/5"></div>
-              <span className="text-[7px] font-black uppercase text-white/10 tracking-[0.3em]">Sync</span>
-              <div className="h-[1px] flex-1 bg-white/5"></div>
-            </div>
-
-            <div className="w-full flex justify-center py-1 rounded-[2rem] bg-white shadow-lg active:scale-95 transition-transform overflow-hidden">
-               <div id="googleBtn" className="relative z-10 w-full flex justify-center min-h-[32px]"></div>
-            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <i className="fas fa-shield-halved text-white/20 text-sm mb-2"></i>
-              <p className="text-[7px] font-black text-white/10 uppercase tracking-widest">Secure</p>
+          <div className="pt-4 flex justify-between px-2">
+            <div className="flex flex-col items-center gap-1.5 opacity-40">
+              <i className="fas fa-bolt-lightning text-xs text-indigo-400"></i>
+              <span className="text-[7px] font-black text-white uppercase tracking-tighter">Fast</span>
             </div>
-            <div>
-              <i className="fas fa-microchip text-white/20 text-sm mb-2"></i>
-              <p className="text-[7px] font-black text-white/10 uppercase tracking-widest">Neural</p>
+            <div className="flex flex-col items-center gap-1.5 opacity-40">
+              <i className="fas fa-fingerprint text-xs text-indigo-400"></i>
+              <span className="text-[7px] font-black text-white uppercase tracking-tighter">Secure</span>
             </div>
-            <div>
-              <i className="fas fa-infinity text-white/20 text-sm mb-2"></i>
-              <p className="text-[7px] font-black text-white/10 uppercase tracking-widest">Pro</p>
+            <div className="flex flex-col items-center gap-1.5 opacity-40">
+              <i className="fas fa-brain text-xs text-indigo-400"></i>
+              <span className="text-[7px] font-black text-white uppercase tracking-tighter">Smart</span>
             </div>
           </div>
         </div>
+
+        <p className="text-center mt-8 text-slate-600 text-[9px] font-bold uppercase tracking-[0.2em]">
+          Version 2.5 • Powered by NanoAI
+        </p>
       </div>
     </div>
   );

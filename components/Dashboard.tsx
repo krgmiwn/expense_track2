@@ -85,8 +85,30 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
     setOracleQuery('');
   };
 
+  const getAccountIcon = (id: string) => {
+    switch (id) {
+      case 'BANK': return <i className="fas fa-university"></i>;
+      case 'BKASH': return <i className="fas fa-mobile-alt"></i>;
+      case 'NAGAD': return <i className="fas fa-coins"></i>;
+      case 'ROCKET': return <i className="fas fa-rocket"></i>;
+      case 'CARD': return <i className="fas fa-credit-card"></i>;
+      default: return <i className="fas fa-wallet"></i>;
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Hello Greeting Section */}
+      <div className="px-1 -mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Greetings</p>
+          <h2 className="text-lg font-black text-white tracking-tight">Hello, {state.profile.name.split(' ')[0]}</h2>
+        </div>
+        {state.profile.picture && (
+          <img src={state.profile.picture} alt="Profile" className="w-10 h-10 rounded-full border border-white/10" />
+        )}
+      </div>
+
       {/* Primary Cockpit */}
       <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[100px]"></div>
@@ -104,6 +126,27 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
             className="w-full bg-transparent text-white px-12 py-4 text-sm font-bold outline-none"
           />
         </form>
+      </div>
+
+      {/* Account Matrix */}
+      <div className="px-1">
+        <h2 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-4 ml-1">Vault Allocation</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {state.accounts.map(acc => (
+            <div key={acc.id} className="bg-slate-900 border border-white/5 rounded-3xl p-5 flex flex-col gap-3 shadow-lg active:scale-95 transition-all">
+              <div className="flex justify-between items-start">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg ${acc.color || 'bg-white/5'} text-white shadow-lg`}>
+                  {getAccountIcon(acc.id)}
+                </div>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{acc.id}</span>
+              </div>
+              <div className="mt-1">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter mb-0.5">{acc.name}</p>
+                <p className="text-xl font-black text-white tracking-tighter">{symbol}{acc.balance.toLocaleString()}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Primary Actions */}
@@ -137,11 +180,12 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
       </div>
 
       {/* AI Intro & Advice */}
-      <div className="bg-indigo-600/10 rounded-[2.5rem] p-6 flex gap-5 items-center border border-indigo-500/20 shadow-xl">
-        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/40">
-          <i className="fas fa-sparkles text-white text-lg"></i>
+      <div className="bg-indigo-600/10 rounded-[2.5rem] p-6 flex gap-5 items-center border border-indigo-500/20 shadow-xl overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-50 pointer-events-none"></div>
+        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/40 relative z-10">
+          <i className="fas fa-sparkles text-white text-lg animate-shimmer-sparkle"></i>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 relative z-10">
           <p className="text-[12px] text-indigo-100/90 leading-relaxed font-semibold italic">"{advice}"</p>
         </div>
       </div>
@@ -177,16 +221,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onAdd }) => {
              <button onClick={() => setOracleAnswer(null)} className="mt-3 text-[9px] font-black text-indigo-400 uppercase tracking-widest">Clear Answer</button>
           </div>
         )}
-      </div>
-
-      {/* Account Matrix */}
-      <div className="flex gap-3 overflow-x-auto no-scrollbar py-2">
-        {state.accounts.map(acc => (
-          <div key={acc.id} className="flex-shrink-0 flex items-center gap-4 bg-white/5 border border-white/5 rounded-2xl px-5 py-3.5 shadow-sm active:bg-white/10 transition-colors">
-            <span className="text-[11px] font-black text-white/40 uppercase tracking-tighter">{acc.name}</span>
-            <span className="text-[13px] font-black text-white/90">{symbol}{acc.balance.toLocaleString()}</span>
-          </div>
-        ))}
       </div>
 
       {/* Entry System */}
