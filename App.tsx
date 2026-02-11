@@ -31,6 +31,7 @@ const EMPTY_STATE: AppState = {
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(EMPTY_STATE);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'scheduled' | 'settings'>('dashboard');
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const skipSave = useRef(true);
 
@@ -41,13 +42,11 @@ const App: React.FC = () => {
     
     if (savedData) {
       const parsed = JSON.parse(savedData);
-      // Merge latest user profile info with saved financial data
       setState({
         ...parsed,
         profile: { ...user, theme: parsed.profile?.theme || 'dark' }
       });
     } else {
-      // Truly new user: Start with zeroed state
       setState({
         ...EMPTY_STATE,
         profile: user,
@@ -58,7 +57,7 @@ const App: React.FC = () => {
     skipSave.current = false;
   };
 
-  // Persist State to Storage whenever it changes (Individual User Keys)
+  // Persist State to Storage whenever it changes
   useEffect(() => {
     if (!skipSave.current && state.profile.isAuthenticated && state.profile.email) {
       const userKey = `track_pro_v2_${state.profile.email}`;
@@ -98,6 +97,7 @@ const App: React.FC = () => {
     setIsDataLoaded(false);
     skipSave.current = true;
     setState(EMPTY_STATE);
+    setActiveTab('dashboard');
   };
 
   const theme = state.profile.theme || 'dark';
@@ -112,8 +112,12 @@ const App: React.FC = () => {
       <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24">
         <div className="max-w-md mx-auto space-y-4">
           <header className="flex justify-between items-center px-1 h-12">
-            <span className={`text-xl font-black tracking-tighter uppercase ${isDark ? 'text-indigo-500' : 'text-indigo-600'}`}>{activeTab}</span>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-700' : 'text-slate-400'}`}>{new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+            <span className={`text-xl font-black tracking-tighter uppercase ${isDark ? 'text-indigo-500' : 'text-indigo-600'}`}>
+              {activeTab === 'dashboard' ? 'Overview' : activeTab}
+            </span>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-700' : 'text-slate-400'}`}>
+              {new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+            </span>
           </header>
           
           {activeTab === 'dashboard' && (
@@ -125,17 +129,35 @@ const App: React.FC = () => {
               onUpdateAccountBalance={updateAccountBalance}
             />
           )}
-          {activeTab === 'history' && <History transactions={state.transactions} onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} currency={state.profile.currency} theme={theme} />}
-          {activeTab === 'scheduled' && <Scheduled scheduled={state.scheduled} onAdd={addScheduledTransaction} onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} currency={state.profile.currency} theme={theme} />}
-          {activeTab === 'settings' && <Settings profile={state.profile} onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} onLogout={handleLogout} />}
+          {activeTab === 'history' && (
+            <History 
+              transactions={state.transactions} 
+              onDelete={(id) => setState(p => ({ ...p, transactions: p.transactions.filter(t => t.id !== id) }))} 
+              currency={state.profile.currency} 
+              theme={theme} 
+            />
+          )}
+          {activeTab === 'scheduled' && (
+            <Scheduled 
+              scheduled={state.scheduled} 
+              onAdd={addScheduledTransaction} 
+              onDelete={(id) => setState(p => ({ ...p, scheduled: p.scheduled.filter(s => s.id !== id) }))} 
+              currency={state.profile.currency} 
+              theme={theme} 
+            />
+          )}
+          {activeTab === 'settings' && (
+            <Settings 
+              profile={state.profile} 
+              onUpdate={(p) => setState(s => ({ ...s, profile: { ...s.profile, ...p } }))} 
+              onLogout={handleLogout} 
+            />
+          )}
         </div>
       </main>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} profile={state.profile} />
     </div>
   );
 };
-
-// Simple internal routing state for App
-const [activeTab, setActiveTab] = ['dashboard', (t: any) => {}]; // Placeholder for logical flow, in real app managed by useState in App
 
 export default App;
